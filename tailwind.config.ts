@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -51,6 +52,22 @@ export default {
 				card: {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
+				},
+				// Custom colors for ticket categories
+				"tech-setup": "#D3E4FD",
+				"dev-issues": "#E5DEFF", 
+				"mentoring": "#FDE1D3",
+				"hr-matters": "#FEF7CD",
+				// Status colors
+				"status-pending": "#FEC6A1",
+				"status-progress": "#0EA5E9",
+				"status-resolved": "#10B981",
+				"status-rejected": "#EF4444",
+				// Custom app colors
+				"app-purple": {
+					DEFAULT: "#8B5CF6",
+					dark: "#7E69AB",
+					light: "#D6BCFA"
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
