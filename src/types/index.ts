@@ -1,3 +1,4 @@
+
 export type UserRole = 'requester' | 'agent' | 'approver' | 'supervisor' | 'admin';
 
 export type TicketStatus = 'pending' | 'in_progress' | 'resolved' | 'rejected' | 'approved';
@@ -91,4 +92,59 @@ export interface UserPreferences {
     systemAnnouncements: boolean;
     mentions: boolean;
   };
+}
+
+// New Types for Timesheet Module
+export interface TimeEntry {
+  id: string;
+  userId: string;
+  date: string;
+  hours: number;
+  projectId?: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OvertimeRequest {
+  id: string;
+  userId: string;
+  userName: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  totalHours: number;
+  reason: string;
+  status: TicketStatus;
+  comment?: string;
+  reviewerId?: string;
+  reviewerName?: string;
+  reviewerFeedback?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// New Types for Outsource Review Module
+export type ReviewCriteriaScore = 1 | 2 | 3 | 4 | 5;
+
+export interface ReviewCriteria {
+  technicalQuality: ReviewCriteriaScore;
+  professionalAttitude: ReviewCriteriaScore;
+  communication: ReviewCriteriaScore;
+  ruleCompliance: ReviewCriteriaScore;
+  initiative: ReviewCriteriaScore;
+}
+
+export interface OutsourceReview {
+  id: string;
+  revieweeId: string;
+  revieweeName: string;
+  reviewerId: string;
+  reviewerName: string;
+  reviewDate: string;
+  criteria: ReviewCriteria;
+  strengths?: string;
+  areasToImprove?: string;
+  createdAt: string;
+  updatedAt: string;
 }

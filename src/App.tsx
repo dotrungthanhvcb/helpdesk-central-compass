@@ -18,6 +18,10 @@ import UserManagement from "./pages/UserManagement";
 import UserProfile from "./pages/UserProfile";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import TimesheetsPage from "./pages/TimesheetsPage";
+import OvertimeRequestPage from "./pages/OvertimeRequestPage";
+import OutsourceReviewPage from "./pages/OutsourceReviewPage";
+import ReviewDetailPage from "./pages/ReviewDetailPage";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +44,14 @@ const App = () => (
             <Route path="/users" element={<AppLayout><UserManagement /></AppLayout>} />
             <Route path="/profile" element={<AppLayout><UserProfile /></AppLayout>} />
             <Route path="/settings" element={<AppLayout><Settings /></AppLayout>} />
+            
+            {/* New routes for Timesheet module */}
+            <Route path="/timesheets" element={<AppLayout><TimesheetsPage /></AppLayout>} />
+            <Route path="/timesheets/overtime" element={<AppLayout><OvertimeRequestPage /></AppLayout>} />
+            
+            {/* New routes for Outsource Review module */}
+            <Route path="/reviews" element={<AppLayout><OutsourceReviewPage /></AppLayout>} />
+            <Route path="/reviews/:id" element={<AppLayout><ReviewDetailPage /></AppLayout>} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>

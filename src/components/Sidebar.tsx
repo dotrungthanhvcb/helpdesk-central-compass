@@ -11,7 +11,9 @@ import {
   UsersIcon,
   BarChart3Icon,
   UserIcon,
-  ShieldIcon
+  ShieldIcon,
+  ClockIcon,
+  StarIcon
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -29,7 +31,16 @@ const Sidebar = () => {
     { name: "Create Ticket", href: "/tickets/new", icon: PlusCircleIcon },
     { name: "Notifications", href: "/notifications", icon: InboxIcon, badge: unreadNotificationsCount },
     { name: "Analytics", href: "/analytics", icon: BarChart3Icon },
+    // Add new modules
+    { name: "Timesheets", href: "/timesheets", icon: ClockIcon },
   ];
+
+  // Only show Outsource Review for supervisors or admins
+  const isManager = user && (user.role === 'supervisor' || user.role === 'admin');
+  
+  if (isManager) {
+    navigation.push({ name: "Outsource Review", href: "/reviews", icon: StarIcon });
+  }
 
   // Admin-only navigation items
   const adminNavigation = [
@@ -93,11 +104,11 @@ const Sidebar = () => {
                 >
                   <item.icon className="mr-3 h-5 w-5" />
                   <span>{item.name}</span>
-                  {item.badge && (
+                  {item.badge ? (
                     <span className="ml-auto bg-app-purple text-white text-xs font-semibold rounded-full h-5 w-5 flex items-center justify-center">
                       {item.badge}
                     </span>
-                  )}
+                  ) : null}
                 </Link>
               ))}
             </div>
