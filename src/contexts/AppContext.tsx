@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { User, Ticket, NotificationMessage, OvertimeRequest, OutsourceReview } from "@/types";
+import { User, Ticket, NotificationMessage, OvertimeRequest, OutsourceReview, EnvironmentSetup } from "@/types";
 import { currentUser, users as mockUsers, tickets as mockTickets, notifications as mockNotifications } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 
@@ -29,6 +29,9 @@ interface AppContextType {
   createReview: (review: Omit<OutsourceReview, "id" | "createdAt" | "updatedAt" | "reviewerId" | "reviewerName">) => void;
   updateReview: (id: string, updates: Partial<OutsourceReview>) => void;
   deleteReview: (id: string) => void;
+  environmentSetups: EnvironmentSetup[];
+  createEnvironmentSetup: (setup: Omit<EnvironmentSetup, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  updateEnvironmentSetup: (setup: EnvironmentSetup) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -40,6 +43,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
   const [overtimeRequests, setOvertimeRequests] = useState<OvertimeRequest[]>([]);
   const [reviews, setReviews] = useState<OutsourceReview[]>([]);
+  const [environmentSetups, setEnvironmentSetups] = useState<EnvironmentSetup[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
@@ -51,6 +55,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setNotifications(mockNotifications.filter(n => n.userId === currentUser.id));
       setOvertimeRequests([]);
       setReviews([]);
+      setEnvironmentSetups([]);
       setIsAuthenticated(true);
     };
     autoLogin();
@@ -66,6 +71,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         setUsers(mockUsers);
         setTickets(mockTickets);
         setNotifications(mockNotifications.filter(n => n.userId === currentUser.id));
+        setEnvironmentSetups([]);
         setIsAuthenticated(true);
         toast({
           title: "Đăng nhập thành công",
@@ -316,7 +322,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   };
 
-  const value = {
+  const createEnvironmentSetup = async (setupData: Omit<EnvironmentSetup, 'id' | 'createdAt' | 'updatedAt'>) => {
+    const newSetup: EnvironmentSetup = {
+      ...setupData,
+      id: `env-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    setEnvironmentSetups((prev) => [...prev, newSetup]);
+    return Promise.resolve();
+  };
+
+  const updateEnvironmentSetup = (updatedSetup: EnvironmentSetup) => {
+    setEnvironmentSetups((prev) => 
+      prev.map((setup) => (setup.id === updatedSetup.id ? updatedSetup : setup))
+    );
+  };
+
+  const value: AppContextType = {
     user,
     users,
     tickets,
@@ -342,6 +366,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     createReview,
     updateReview,
     deleteReview,
+    environmentSetups,
+    createEnvironmentSetup,
+    updateEnvironmentSetup,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

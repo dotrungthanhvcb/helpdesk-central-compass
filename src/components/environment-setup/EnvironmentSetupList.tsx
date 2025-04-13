@@ -17,7 +17,7 @@ import {
   AlertCircle,
   ChevronRight
 } from "lucide-react";
-import { StatusBadge } from "@/components/StatusBadge";
+import StatusBadge from "@/components/StatusBadge";
 import { Link } from 'react-router-dom';
 import { useApp } from "@/contexts/AppContext";
 import { EnvironmentSetup, DeviceType, SetupLocation } from '@/types';
