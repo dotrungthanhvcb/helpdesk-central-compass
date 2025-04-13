@@ -22,6 +22,8 @@ import TimesheetsPage from "./pages/TimesheetsPage";
 import OvertimeRequestPage from "./pages/OvertimeRequestPage";
 import OutsourceReviewPage from "./pages/OutsourceReviewPage";
 import ReviewDetailPage from "./pages/ReviewDetailPage";
+import EnvironmentSetupPage from "./pages/EnvironmentSetupPage";
+import EnvironmentSetupDetailPage from "./pages/EnvironmentSetupDetailPage";
 
 const queryClient = new QueryClient();
 
@@ -45,13 +47,17 @@ const App = () => (
             <Route path="/profile" element={<AppLayout><UserProfile /></AppLayout>} />
             <Route path="/settings" element={<AppLayout><Settings /></AppLayout>} />
             
-            {/* New routes for Timesheet module */}
+            {/* Timesheet module routes */}
             <Route path="/timesheets" element={<AppLayout><TimesheetsPage /></AppLayout>} />
             <Route path="/timesheets/overtime" element={<AppLayout><OvertimeRequestPage /></AppLayout>} />
             
-            {/* New routes for Outsource Review module */}
+            {/* Outsource Review module routes */}
             <Route path="/reviews" element={<AppLayout><OutsourceReviewPage /></AppLayout>} />
             <Route path="/reviews/:id" element={<AppLayout><ReviewDetailPage /></AppLayout>} />
+            
+            {/* Environment Setup module routes */}
+            <Route path="/environment-setup" element={<AppLayout><EnvironmentSetupPage /></AppLayout>} />
+            <Route path="/environment-setup/:id" element={<AppLayout><EnvironmentSetupDetailPage /></AppLayout>} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>

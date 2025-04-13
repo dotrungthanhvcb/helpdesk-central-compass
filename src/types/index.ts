@@ -1,11 +1,11 @@
 
 export type UserRole = 'requester' | 'agent' | 'approver' | 'supervisor' | 'admin';
 
-export type TicketStatus = 'pending' | 'in_progress' | 'resolved' | 'rejected' | 'approved';
+export type TicketStatus = 'pending' | 'in_progress' | 'resolved' | 'rejected' | 'approved' | 'blocked';
 
 export type TicketPriority = 'low' | 'medium' | 'high';
 
-export type TicketCategory = 'tech_setup' | 'dev_issues' | 'mentoring' | 'hr_matters';
+export type TicketCategory = 'tech_setup' | 'dev_issues' | 'mentoring' | 'hr_matters' | 'env_setup';
 
 export interface User {
   id: string;
@@ -147,4 +147,42 @@ export interface OutsourceReview {
   areasToImprove?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// New Types for Environment Setup Module
+export type DeviceType = 'laptop' | 'pc' | 'vm' | 'byod';
+export type SetupLocation = 'onsite' | 'remote';
+export type SetupItemStatus = 'pending' | 'in_progress' | 'done' | 'blocked';
+
+export interface SetupItem {
+  id: string;
+  title: string;
+  description?: string;
+  category: 'device' | 'mdm' | 'os' | 'software' | 'account';
+  status: SetupItemStatus;
+  assignedTo?: User;
+  createdAt: string;
+  updatedAt: string;
+  completedAt?: string;
+  notes?: string;
+}
+
+export interface EnvironmentSetup {
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  deviceType: DeviceType;
+  setupLocation: SetupLocation;
+  requestDate: string;
+  responsibleId?: string;
+  responsibleName?: string;
+  completionDate?: string;
+  status: TicketStatus;
+  notes?: string;
+  items: SetupItem[];
+  createdAt: string;
+  updatedAt: string;
+  verifiedById?: string;
+  verifiedByName?: string;
+  verificationNotes?: string;
 }
