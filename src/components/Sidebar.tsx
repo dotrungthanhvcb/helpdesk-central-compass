@@ -10,6 +10,8 @@ import {
   LogOutIcon,
   UsersIcon,
   BarChart3Icon,
+  UserIcon,
+  ShieldIcon
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,7 +29,16 @@ const Sidebar = () => {
     { name: "Create Ticket", href: "/tickets/new", icon: PlusCircleIcon },
     { name: "Notifications", href: "/notifications", icon: InboxIcon, badge: unreadNotificationsCount },
     { name: "Analytics", href: "/analytics", icon: BarChart3Icon },
+  ];
+
+  // Admin-only navigation items
+  const adminNavigation = [
     { name: "Users & Teams", href: "/users", icon: UsersIcon },
+  ];
+
+  // User profile and settings
+  const userNavigation = [
+    { name: "My Profile", href: "/profile", icon: UserIcon },
     { name: "Settings", href: "/settings", icon: SettingsIcon },
   ];
 
@@ -61,6 +72,59 @@ const Sidebar = () => {
             ) : null}
           </Link>
         ))}
+        
+        {user && user.role === 'admin' && (
+          <>
+            <Separator className="my-2" />
+            <div className="px-3 py-2">
+              <h2 className="mb-2 px-2 text-xs font-semibold tracking-tight text-sidebar-foreground/70">
+                Administration
+              </h2>
+              {adminNavigation.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  className={cn(
+                    "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                    location.pathname === item.href
+                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                  )}
+                >
+                  <item.icon className="mr-3 h-5 w-5" />
+                  <span>{item.name}</span>
+                  {item.badge && (
+                    <span className="ml-auto bg-app-purple text-white text-xs font-semibold rounded-full h-5 w-5 flex items-center justify-center">
+                      {item.badge}
+                    </span>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </>
+        )}
+        
+        <Separator className="my-2" />
+        <div className="px-3 py-2">
+          <h2 className="mb-2 px-2 text-xs font-semibold tracking-tight text-sidebar-foreground/70">
+            User
+          </h2>
+          {userNavigation.map((item) => (
+            <Link
+              key={item.name}
+              to={item.href}
+              className={cn(
+                "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                location.pathname === item.href
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+              )}
+            >
+              <item.icon className="mr-3 h-5 w-5" />
+              <span>{item.name}</span>
+            </Link>
+          ))}
+        </div>
       </div>
       
       <Separator className="my-2" />
@@ -74,7 +138,13 @@ const Sidebar = () => {
             </Avatar>
             <div className="ml-3">
               <p className="text-sm font-medium text-sidebar-foreground">{user.name}</p>
-              <p className="text-xs text-sidebar-foreground/70">{user.role}</p>
+              <p className="text-xs text-sidebar-foreground/70 flex items-center">
+                {user.role === 'admin' && <ShieldIcon className="h-3 w-3 mr-1 text-app-purple" />}
+                {user.role === 'admin' ? 'Quản trị viên' : 
+                 user.role === 'supervisor' ? 'Quản lý' :
+                 user.role === 'agent' ? 'Nhân viên hỗ trợ' :
+                 user.role === 'approver' ? 'Người phê duyệt' : 'Người yêu cầu'}
+              </p>
             </div>
           </div>
           <Button variant="outline" className="w-full" onClick={logout}>

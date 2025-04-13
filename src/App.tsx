@@ -14,6 +14,9 @@ import TicketDetail from "./pages/TicketDetail";
 import CreateTicket from "./pages/CreateTicket";
 import Notifications from "./pages/Notifications";
 import Analytics from "./pages/Analytics";
+import UserManagement from "./pages/UserManagement";
+import UserProfile from "./pages/UserProfile";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +37,9 @@ const App = () => (
             <Route path="/tickets/:id" element={<AppLayout><TicketDetail /></AppLayout>} />
             <Route path="/notifications" element={<AppLayout><Notifications /></AppLayout>} />
             <Route path="/analytics" element={<AppLayout><Analytics /></AppLayout>} />
+            <Route path="/users" element={<AppLayout><UserManagement /></AppLayout>} />
+            <Route path="/profile" element={<AppLayout><UserProfile /></AppLayout>} />
+            <Route path="/settings" element={<AppLayout><Settings /></AppLayout>} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>

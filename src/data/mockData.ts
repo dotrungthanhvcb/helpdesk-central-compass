@@ -1,4 +1,3 @@
-
 import { Ticket, User, Comment, Attachment, NotificationMessage } from "@/types";
 
 export const users: User[] = [
@@ -9,6 +8,9 @@ export const users: User[] = [
     role: "requester",
     department: "Marketing",
     avatar: "https://i.pravatar.cc/150?img=1",
+    isActive: true,
+    createdAt: "2025-01-15T08:00:00Z",
+    lastLogin: "2025-04-12T09:30:00Z",
   },
   {
     id: "user-2",
@@ -17,6 +19,9 @@ export const users: User[] = [
     role: "agent",
     department: "IT Support",
     avatar: "https://i.pravatar.cc/150?img=2",
+    isActive: true,
+    createdAt: "2025-01-20T08:00:00Z",
+    lastLogin: "2025-04-11T14:15:00Z",
   },
   {
     id: "user-3",
@@ -25,6 +30,9 @@ export const users: User[] = [
     role: "approver",
     department: "Engineering",
     avatar: "https://i.pravatar.cc/150?img=3",
+    isActive: true,
+    createdAt: "2025-02-01T08:00:00Z",
+    lastLogin: "2025-04-10T16:45:00Z",
   },
   {
     id: "user-4",
@@ -33,6 +41,9 @@ export const users: User[] = [
     role: "supervisor",
     department: "HR",
     avatar: "https://i.pravatar.cc/150?img=4",
+    isActive: true,
+    createdAt: "2025-02-10T08:00:00Z",
+    lastLogin: "2025-04-12T11:20:00Z",
   },
   {
     id: "user-5",
@@ -41,10 +52,46 @@ export const users: User[] = [
     role: "requester",
     department: "Sales",
     avatar: "https://i.pravatar.cc/150?img=5",
+    isActive: true,
+    createdAt: "2025-02-15T08:00:00Z",
+    lastLogin: "2025-04-09T10:10:00Z",
+  },
+  {
+    id: "user-6",
+    name: "Trương Minh F",
+    email: "truong.minh.f@example.com",
+    role: "admin",
+    department: "IT Management",
+    avatar: "https://i.pravatar.cc/150?img=8",
+    isActive: true,
+    createdAt: "2025-01-05T08:00:00Z",
+    lastLogin: "2025-04-12T15:30:00Z",
+  },
+  {
+    id: "user-7",
+    name: "Đỗ Thị G",
+    email: "do.thi.g@example.com",
+    role: "agent",
+    department: "Customer Support",
+    avatar: "https://i.pravatar.cc/150?img=9",
+    isActive: false,
+    createdAt: "2025-02-20T08:00:00Z",
+    lastLogin: "2025-03-15T09:45:00Z",
+  },
+  {
+    id: "user-8",
+    name: "Võ Thanh H",
+    email: "vo.thanh.h@example.com",
+    role: "requester",
+    department: "Finance",
+    avatar: "https://i.pravatar.cc/150?img=12",
+    isActive: true,
+    createdAt: "2025-03-01T08:00:00Z",
+    lastLogin: "2025-04-11T13:50:00Z",
   },
 ];
 
-export const currentUser: User = users[0];
+export const currentUser: User = users[5]; // Admin user for testing
 
 export const comments: Comment[] = [
   {
@@ -203,7 +250,6 @@ export const notifications: NotificationMessage[] = [
   },
 ];
 
-// Helper functions for the mock data
 export const getCategoryLabel = (category: string): string => {
   switch (category) {
     case "tech_setup":

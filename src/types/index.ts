@@ -1,7 +1,6 @@
+export type UserRole = 'requester' | 'agent' | 'approver' | 'supervisor' | 'admin';
 
-export type UserRole = 'requester' | 'agent' | 'approver' | 'supervisor';
-
-export type TicketStatus = 'pending' | 'in_progress' | 'resolved' | 'rejected';
+export type TicketStatus = 'pending' | 'in_progress' | 'resolved' | 'rejected' | 'approved';
 
 export type TicketPriority = 'low' | 'medium' | 'high';
 
@@ -14,6 +13,9 @@ export interface User {
   role: UserRole;
   department?: string;
   avatar?: string;
+  isActive?: boolean;
+  createdAt?: string;
+  lastLogin?: string;
 }
 
 export interface Comment {
@@ -76,4 +78,17 @@ export interface TicketFilter {
     to: string;
   };
   searchQuery?: string;
+}
+
+export interface UserPreferences {
+  language: 'en' | 'vi';
+  timezone: string;
+  theme: 'light' | 'dark' | 'system';
+  notificationSettings: {
+    email: boolean;
+    browser: boolean;
+    ticketUpdates: boolean;
+    systemAnnouncements: boolean;
+    mentions: boolean;
+  };
 }
