@@ -1,14 +1,6 @@
-
-import React, { useState } from 'react';
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { format } from "date-fns";
-import { useApp } from "@/contexts/AppContext";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { DatePicker } from "@/components/ui/date-picker";
+import React, { useState, useEffect } from 'react';
+import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from 'react-router-dom';
 import {
   Form,
   FormControl,
@@ -17,300 +9,288 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form";
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { DeviceType, SetupLocation } from '@/types';
+} from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import { useApp } from "@/contexts/AppContext";
+import { EnvironmentSetup, DeviceType, SetupLocation, SetupItem } from '@/types';
 
-// Define form schema
 const formSchema = z.object({
-  employeeName: z.string().min(3, {
-    message: "Tên nhân viên phải có ít nhất 3 ký tự.",
+  employeeId: z.string().min(3, {
+    message: "Employee ID must be at least 3 characters.",
   }),
-  deviceType: z.enum(["laptop", "pc", "vm", "byod"] as const),
-  setupLocation: z.enum(["onsite", "remote"] as const),
-  requestDate: z.date(),
+  employeeName: z.string().min(3, {
+    message: "Employee name must be at least 3 characters.",
+  }),
+  deviceType: z.enum(['laptop', 'pc', 'vm', 'byod']),
+  setupLocation: z.enum(['onsite', 'remote']),
+  responsibleId: z.string().optional(),
   responsibleName: z.string().optional(),
   notes: z.string().optional(),
-});
+})
 
-type FormValues = z.infer<typeof formSchema>;
+interface CreateEnvironmentSetupFormProps {
+  onSuccess?: () => void;
+}
 
-type CreateEnvironmentSetupFormProps = {
-  onSuccess: () => void;
-};
-
-export const CreateEnvironmentSetupForm = ({ onSuccess }: CreateEnvironmentSetupFormProps) => {
-  const { createEnvironmentSetup, user } = useApp();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Default values for the form
-  const defaultValues: Partial<FormValues> = {
-    requestDate: new Date(),
-  };
-
-  // Initialize form
-  const form = useForm<FormValues>({
+export const CreateEnvironmentSetupForm: React.FC<CreateEnvironmentSetupFormProps> = ({ onSuccess }) => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const { createEnvironmentSetup, users } = useApp();
+  
+  const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues,
-  });
+    defaultValues: {
+      employeeId: "",
+      employeeName: "",
+      deviceType: "laptop",
+      setupLocation: "onsite",
+      responsibleId: "",
+      responsibleName: "",
+      notes: "",
+    },
+  })
+  
+  const [responsibleName, setResponsibleName] = useState<string | undefined>(undefined);
+  
+  useEffect(() => {
+    const responsibleId = form.getValues("responsibleId");
+    const responsible = users.find(user => user.id === responsibleId);
+    setResponsibleName(responsible?.name);
+    form.setValue("responsibleName", responsible?.name);
+  }, [form, users]);
 
-  const onSubmit = async (data: FormValues) => {
-    try {
-      setIsSubmitting(true);
-      
-      // Here we would normally send this to the API
-      // For now, we'll create a mock implementation
-      await createEnvironmentSetup({
-        id: `setup-${Date.now()}`,
-        employeeId: `emp-${Date.now()}`,
-        employeeName: data.employeeName,
-        deviceType: data.deviceType as DeviceType,
-        setupLocation: data.setupLocation as SetupLocation,
-        requestDate: format(data.requestDate, 'yyyy-MM-dd'),
-        responsibleId: data.responsibleName ? `resp-${Date.now()}` : undefined,
-        responsibleName: data.responsibleName || undefined,
-        status: 'pending',
-        notes: data.notes,
-        items: [
-          {
-            id: `item-${Date.now()}-1`,
-            title: 'Device provisioning',
-            category: 'device',
-            status: 'pending',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-          {
-            id: `item-${Date.now()}-2`,
-            title: 'MDM configuration',
-            category: 'mdm',
-            status: 'pending',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-          {
-            id: `item-${Date.now()}-3`,
-            title: 'OS Installation / VPN',
-            category: 'os',
-            status: 'pending',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-          {
-            id: `item-${Date.now()}-4`,
-            title: 'Software setup (IDE, Communication tools)',
-            category: 'software',
-            status: 'pending',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-          {
-            id: `item-${Date.now()}-5`,
-            title: 'Account & Access Setup',
-            category: 'account',
-            status: 'pending',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        ],
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const { employeeId, employeeName, deviceType, setupLocation, responsibleId, notes } = values;
+
+    const defaultItems: SetupItem[] = [
+      {
+        id: `item-${Date.now()}-1`,
+        title: "Tạo tài khoản Jira",
+        category: "account",
+        status: "pending",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      });
+      },
+      {
+        id: `item-${Date.now()}-2`,
+        title: "Cấp quyền truy cập SharePoint",
+        category: "account",
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: `item-${Date.now()}-3`,
+        title: "Thiết lập Laptop/Tablet (VCB Tablet)",
+        category: "device",
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: `item-${Date.now()}-4`,
+        title: "Cấp quyền truy cập GitLab",
+        category: "account",
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: `item-${Date.now()}-5`,
+        title: "Thiết lập VPN",
+        category: "os",
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: `item-${Date.now()}-6`,
+        title: "Whitelist MAC Address, mở firewall",
+        category: "os",
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      {
+        id: `item-${Date.now()}-7`,
+        title: "Cài đặt phần mềm (Zoom, VSCode,...)",
+        category: "software",
+        status: "pending",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ];
+
+    const newSetup: Omit<EnvironmentSetup, "id" | "createdAt" | "updatedAt"> = {
+      employeeId: employeeId,
+      employeeName: employeeName,
+      deviceType: deviceType as DeviceType,
+      setupLocation: setupLocation as SetupLocation,
+      requestDate: new Date().toISOString().split('T')[0],
+      responsibleId: responsibleId || undefined,
+      responsibleName: responsibleName || undefined,
+      status: 'pending',
+      notes: notes || undefined,
+      items: defaultItems,
+    };
+    
+    try {
+      await createEnvironmentSetup(newSetup);
+      toast({
+        title: "Yêu cầu đã được tạo",
+        description: "Yêu cầu thiết lập môi trường làm việc đã được tạo thành công.",
+      })
       
-      onSuccess();
+      // Redirect to the environment setup page
+      navigate('/environment-setup');
+      
+      // Execute callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
-      console.error('Failed to create environment setup request:', error);
-    } finally {
-      setIsSubmitting(false);
+      toast({
+        title: "Có lỗi xảy ra",
+        description: "Không thể tạo yêu cầu thiết lập môi trường làm việc. Vui lòng thử lại.",
+        variant: "destructive",
+      })
     }
-  };
+  }
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="employeeName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Tên nhân viên</FormLabel>
-                <FormControl>
-                  <Input placeholder="Nhập tên nhân viên" {...field} />
-                </FormControl>
-                <FormDescription>
-                  Tên của nhân viên cần thiết lập môi trường làm việc
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="deviceType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Loại thiết bị</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+    <Card>
+      <CardHeader>
+        <CardTitle>Tạo yêu cầu thiết lập môi trường</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="employeeId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Mã nhân viên</FormLabel>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn loại thiết bị" />
-                    </SelectTrigger>
+                    <Input placeholder="Nhập mã nhân viên" {...field} />
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value="laptop">Laptop</SelectItem>
-                    <SelectItem value="pc">PC</SelectItem>
-                    <SelectItem value="vm">VM</SelectItem>
-                    <SelectItem value="byod">BYOD</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormDescription>
-                  Loại thiết bị cần được thiết lập
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="setupLocation"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Địa điểm thiết lập</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="employeeName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tên nhân viên</FormLabel>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Chọn địa điểm" />
-                    </SelectTrigger>
+                    <Input placeholder="Nhập tên nhân viên" {...field} />
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value="onsite">Tại văn phòng</SelectItem>
-                    <SelectItem value="remote">Từ xa</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormDescription>
-                  Nơi thiết lập môi trường làm việc
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="requestDate"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Ngày yêu cầu</FormLabel>
-                <DatePicker
-                  date={field.value}
-                  setDate={field.onChange}
-                />
-                <FormDescription>
-                  Ngày cần hoàn thành thiết lập
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="responsibleName"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Người phụ trách IT</FormLabel>
-                <FormControl>
-                  <Input placeholder="Tên người phụ trách IT" {...field} />
-                </FormControl>
-                <FormDescription>
-                  Người sẽ phụ trách thiết lập
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Ghi chú</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Nhập các yêu cầu đặc biệt hoặc lưu ý"
-                  className="min-h-[100px]"
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>
-                Các yêu cầu đặc biệt hoặc hướng dẫn cho việc thiết lập
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Các mục thiết lập mặc định</CardTitle>
-            <CardDescription>
-              Các mục sau sẽ được tạo tự động cho yêu cầu thiết lập này
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2">
-              <li className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
-                <span>Cấp phát thiết bị</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
-                <span>Cấu hình MDM</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
-                <span>Cài đặt hệ điều hành / VPN</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
-                <span>Cài đặt phần mềm (IDE, công cụ giao tiếp)</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <div className="h-2 w-2 rounded-full bg-yellow-500"></div>
-                <span>Thiết lập tài khoản & quyền truy cập</span>
-              </li>
-            </ul>
-          </CardContent>
-        </Card>
-
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Đang xử lý..." : "Tạo yêu cầu thiết lập"}
-        </Button>
-      </form>
-    </Form>
-  );
-};
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="deviceType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Loại thiết bị</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn loại thiết bị" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="laptop">Laptop</SelectItem>
+                      <SelectItem value="pc">PC</SelectItem>
+                      <SelectItem value="vm">VM</SelectItem>
+                      <SelectItem value="byod">BYOD</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="setupLocation"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Địa điểm làm việc</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn địa điểm làm việc" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="onsite">Tại văn phòng</SelectItem>
+                      <SelectItem value="remote">Từ xa</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="responsibleId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Người phụ trách</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn người phụ trách" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {users.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>{user.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Ghi chú</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Nhập ghi chú nếu có"
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit">Tạo yêu cầu</Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
+  )
+}

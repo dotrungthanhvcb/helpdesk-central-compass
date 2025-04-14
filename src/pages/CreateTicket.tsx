@@ -1,125 +1,148 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '@/contexts/AppContext';
-import { TicketStatus, TicketCategory, TicketPriority } from '@/types';
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { useApp } from "@/contexts/AppContext";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Label } from "@/components/ui/label"
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import {
+  TicketCategory,
+  TicketPriority,
+  Ticket,
+} from "@/types";
+import { ChevronLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const CreateTicket = () => {
-  const { createTicket, user } = useApp();
+  const { addTicket, user } = useApp();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('');
-  const [priority, setPriority] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [category, setCategory] = useState<TicketCategory>('tech_setup');
+  const [priority, setPriority] = useState<TicketPriority>('medium');
+  const [tags, setTags] = useState('');
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setIsSubmitting(true);
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
 
-    try {
-      await createTicket({
-        status: "pending" as TicketStatus,
-        title: title,
-        description: description,
-        category: category as TicketCategory,
-        priority: priority as TicketPriority,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      });
-      
+    if (!title || !description) {
       toast({
-        title: "Ticket Created",
-        description: "Your ticket has been created successfully.",
-      });
-      
-      navigate('/tickets');
-    } catch (error: any) {
-      setError(error.message || 'Failed to create ticket');
-      
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create ticket",
+        title: "Thiếu thông tin",
+        description: "Vui lòng điền đầy đủ thông tin tiêu đề và mô tả.",
         variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
+      return;
     }
+
+    const newTicket: Omit<Ticket, "requester" | "id" | "createdAt" | "updatedAt"> = {
+      title,
+      description,
+      category,
+      status: "pending",
+      priority,
+      tags: tags ? tags.split(",").map(tag => tag.trim()) : [],
+    };
+
+    addTicket(newTicket);
+    toast({
+      title: "Tạo thành công",
+      description: "Ticket của bạn đã được tạo thành công.",
+    });
+    navigate("/tickets");
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <h2 className="text-2xl font-bold mb-4">Create New Ticket</h2>
-      {error && <div className="text-red-500 mb-4">{error}</div>}
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <Label htmlFor="title">Title</Label>
-          <Input
-            type="text"
-            id="title"
-            placeholder="Enter ticket title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="description">Description</Label>
-          <Textarea
-            id="description"
-            placeholder="Enter ticket description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="category">Category</Label>
-          <Select value={category} onValueChange={(value) => setCategory(value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="tech_setup">Tech Setup</SelectItem>
-              <SelectItem value="dev_issues">Dev Issues</SelectItem>
-              <SelectItem value="mentoring">Mentoring</SelectItem>
-              <SelectItem value="hr_matters">HR Matters</SelectItem>
-              <SelectItem value="env_setup">Env Setup</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <Label htmlFor="priority">Priority</Label>
-          <Select value={priority} onValueChange={(value) => setPriority(value)}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a priority" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="low">Low</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="high">High</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Submitting...' : 'Create Ticket'}
-        </Button>
-      </form>
+    <div className="container py-6">
+      <div className="flex items-center mb-6">
+        <Link to="/tickets">
+          <Button variant="outline" size="sm">
+            <ChevronLeft className="h-4 w-4 mr-1" /> Quay lại
+          </Button>
+        </Link>
+        <h1 className="text-3xl font-bold ml-4">Tạo Ticket mới</h1>
+      </div>
+
+      <Card className="max-w-3xl mx-auto">
+        <CardHeader>
+          <CardTitle>Thông tin Ticket</CardTitle>
+          <CardDescription>Nhập thông tin chi tiết cho ticket mới</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="title">Tiêu đề</Label>
+              <Input
+                type="text"
+                id="title"
+                placeholder="Nhập tiêu đề ticket"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="description">Mô tả</Label>
+              <Textarea
+                id="description"
+                placeholder="Nhập mô tả chi tiết"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="category">Loại</Label>
+              <Select value={category} onValueChange={(value) => setCategory(value as TicketCategory)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn loại" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="tech_setup">Tech Setup</SelectItem>
+                  <SelectItem value="dev_issues">Dev Issues</SelectItem>
+                  <SelectItem value="mentoring">Mentoring</SelectItem>
+                  <SelectItem value="hr_matters">HR Matters</SelectItem>
+                  <SelectItem value="env_setup">Env Setup</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="priority">Độ ưu tiên</Label>
+              <Select value={priority} onValueChange={(value) => setPriority(value as TicketPriority)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn độ ưu tiên" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Thấp</SelectItem>
+                  <SelectItem value="medium">Trung bình</SelectItem>
+                  <SelectItem value="high">Cao</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="tags">Tags (phân tách bằng dấu phẩy)</Label>
+              <Input
+                type="text"
+                id="tags"
+                placeholder="Ví dụ: bug, feature, question"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+              />
+            </div>
+            <Button type="submit">Tạo Ticket</Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 };
