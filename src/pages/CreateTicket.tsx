@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from "@/contexts/AppContext";
@@ -23,7 +24,7 @@ import { ChevronLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const CreateTicket = () => {
-  const { addTicket, user } = useApp();
+  const { createTicket, user } = useApp();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -54,7 +55,7 @@ const CreateTicket = () => {
       tags: tags ? tags.split(",").map(tag => tag.trim()) : [],
     };
 
-    addTicket(newTicket);
+    createTicket(newTicket);
     toast({
       title: "Tạo thành công",
       description: "Ticket của bạn đã được tạo thành công.",
