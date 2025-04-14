@@ -94,7 +94,9 @@ export interface UserPreferences {
   };
 }
 
-// New Types for Timesheet Module
+// Timesheet Module Types
+export type LeaveType = 'paid' | 'sick' | 'unpaid' | 'wfh' | 'other';
+
 export interface TimeEntry {
   id: string;
   userId: string;
@@ -124,7 +126,50 @@ export interface OvertimeRequest {
   updatedAt: string;
 }
 
-// New Types for Outsource Review Module
+export interface WorkLogEntry {
+  id: string;
+  userId: string;
+  date: string;
+  startTime: string;
+  endTime: string;
+  hours: number;
+  projectId?: string;
+  projectName?: string;
+  taskDescription?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LeaveRequest {
+  id: string;
+  userId: string;
+  userName: string;
+  type: LeaveType;
+  startDate: string;
+  endDate: string;
+  totalDays: number;
+  reason?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  approverNote?: string;
+  approverId?: string;
+  approverName?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TimesheetSummary {
+  userId: string;
+  period: string; // 'week' or 'month'
+  startDate: string;
+  endDate: string;
+  regularHours: number;
+  overtimeHours: number;
+  weekendOvertimeHours: number;
+  leaveCount: number;
+  completionRate: number; // percentage of filled days
+}
+
+// Outsource Review Module
 export type ReviewCriteriaScore = 1 | 2 | 3 | 4 | 5;
 
 export interface ReviewCriteria {
@@ -149,7 +194,7 @@ export interface OutsourceReview {
   updatedAt: string;
 }
 
-// New Types for Environment Setup Module
+// Environment Setup Module
 export type DeviceType = 'laptop' | 'pc' | 'vm' | 'byod';
 export type SetupLocation = 'onsite' | 'remote';
 export type SetupItemStatus = 'pending' | 'in_progress' | 'done' | 'blocked';
@@ -165,6 +210,7 @@ export interface SetupItem {
   updatedAt: string;
   completedAt?: string;
   notes?: string;
+  ticketId?: string; // Reference to a related ticket
 }
 
 export interface EnvironmentSetup {

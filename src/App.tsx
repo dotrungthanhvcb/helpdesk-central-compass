@@ -20,6 +20,8 @@ import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import TimesheetsPage from "./pages/TimesheetsPage";
 import OvertimeRequestPage from "./pages/OvertimeRequestPage";
+import WorkLogFormPage from "./pages/WorkLogFormPage";
+import LeaveRequestFormPage from "./pages/LeaveRequestFormPage";
 import OutsourceReviewPage from "./pages/OutsourceReviewPage";
 import ReviewDetailPage from "./pages/ReviewDetailPage";
 import EnvironmentSetupPage from "./pages/EnvironmentSetupPage";
@@ -50,6 +52,9 @@ const App = () => (
             {/* Timesheet module routes */}
             <Route path="/timesheets" element={<AppLayout><TimesheetsPage /></AppLayout>} />
             <Route path="/timesheets/overtime" element={<AppLayout><OvertimeRequestPage /></AppLayout>} />
+            <Route path="/timesheets/overtime/new" element={<AppLayout><OvertimeRequestPage /></AppLayout>} />
+            <Route path="/timesheets/worklog/new" element={<AppLayout><WorkLogFormPage /></AppLayout>} />
+            <Route path="/timesheets/leave/new" element={<AppLayout><LeaveRequestFormPage /></AppLayout>} />
             
             {/* Outsource Review module routes */}
             <Route path="/reviews" element={<AppLayout><OutsourceReviewPage /></AppLayout>} />

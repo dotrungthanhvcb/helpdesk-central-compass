@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -45,7 +44,7 @@ import {
   FileText
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
-import { EnvironmentSetup, DeviceType, SetupLocation, SetupItemStatus } from '@/types';
+import { EnvironmentSetup, DeviceType, SetupLocation, SetupItemStatus, TicketStatus } from '@/types';
 
 const EnvironmentSetupDetailPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -122,22 +121,22 @@ const EnvironmentSetupDetailPage = () => {
   const updateItemStatus = (itemId: string, status: SetupItemStatus) => {
     if (!canEdit) return;
     
-    const updatedSetup = { 
-      ...setup,
-      items: setup.items.map(item => 
-        item.id === itemId 
-          ? { ...item, status, updatedAt: new Date().toISOString() }
-          : item
-      ),
-      updatedAt: new Date().toISOString()
-    };
+    const updatedItems = setup.items.map(item => 
+      item.id === itemId 
+        ? { ...item, status, updatedAt: new Date().toISOString() }
+        : item
+    );
     
     // Check if all items are done
-    const allDone = updatedSetup.items.every(item => item.status === 'done');
-    if (allDone) {
-      updatedSetup.status = 'resolved';
-      updatedSetup.completionDate = new Date().toISOString();
-    }
+    const allDone = updatedItems.every(item => item.status === 'done');
+    
+    const updatedSetup: EnvironmentSetup = { 
+      ...setup,
+      items: updatedItems,
+      status: allDone ? 'resolved' as TicketStatus : setup.status,
+      completionDate: allDone ? new Date().toISOString() : setup.completionDate,
+      updatedAt: new Date().toISOString()
+    };
     
     updateEnvironmentSetup(updatedSetup);
     toast({
@@ -154,15 +153,17 @@ const EnvironmentSetupDetailPage = () => {
   const markAllCompleted = () => {
     if (!canEdit) return;
     
-    const updatedSetup = { 
+    const updatedItems = setup.items.map(item => ({ 
+      ...item, 
+      status: 'done' as SetupItemStatus, 
+      updatedAt: new Date().toISOString(),
+      completedAt: new Date().toISOString()
+    }));
+    
+    const updatedSetup: EnvironmentSetup = { 
       ...setup,
-      items: setup.items.map(item => ({ 
-        ...item, 
-        status: 'done', 
-        updatedAt: new Date().toISOString(),
-        completedAt: new Date().toISOString()
-      })),
-      status: 'resolved',
+      items: updatedItems,
+      status: 'resolved' as TicketStatus,
       completionDate: new Date().toISOString(),
       updatedAt: new Date().toISOString()
     };
@@ -178,9 +179,9 @@ const EnvironmentSetupDetailPage = () => {
   const verifySetup = () => {
     if (!isSupervisor && !isAdmin) return;
     
-    const updatedSetup = { 
+    const updatedSetup: EnvironmentSetup = { 
       ...setup,
-      status: 'approved',
+      status: 'approved' as TicketStatus,
       verifiedById: user?.id,
       verifiedByName: user?.name,
       verificationNotes: feedbackText,

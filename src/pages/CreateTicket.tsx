@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
@@ -13,10 +14,12 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
+import { useToast } from "@/hooks/use-toast";
 
 const CreateTicket = () => {
   const { createTicket, user } = useApp();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -36,13 +39,24 @@ const CreateTicket = () => {
         description: description,
         category: category as TicketCategory,
         priority: priority as TicketPriority,
-        requester: user!,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       });
+      
+      toast({
+        title: "Ticket Created",
+        description: "Your ticket has been created successfully.",
+      });
+      
       navigate('/tickets');
     } catch (error: any) {
       setError(error.message || 'Failed to create ticket');
+      
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create ticket",
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
     }

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { User, Ticket, NotificationMessage, OvertimeRequest, OutsourceReview, EnvironmentSetup } from "@/types";
+import { User, Ticket, NotificationMessage, OvertimeRequest, OutsourceReview, EnvironmentSetup, WorkLogEntry, LeaveRequest, TimesheetSummary } from "@/types";
 import { currentUser, users as mockUsers, tickets as mockTickets, notifications as mockNotifications } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 
@@ -9,6 +9,9 @@ interface AppContextType {
   tickets: Ticket[];
   notifications: NotificationMessage[];
   overtimeRequests: OvertimeRequest[];
+  workLogs: WorkLogEntry[];
+  leaveRequests: LeaveRequest[];
+  timesheetSummaries: TimesheetSummary[];
   reviews: OutsourceReview[];
   unreadNotificationsCount: number;
   isAuthenticated: boolean;
@@ -26,12 +29,20 @@ interface AppContextType {
   createOvertimeRequest: (request: Omit<OvertimeRequest, "id" | "createdAt" | "updatedAt" | "status" | "userId" | "userName">) => void;
   updateOvertimeRequest: (id: string, updates: Partial<OvertimeRequest>) => void;
   deleteOvertimeRequest: (id: string) => void;
+  createWorkLog: (workLog: Omit<WorkLogEntry, "id" | "createdAt" | "updatedAt" | "userId">) => void;
+  updateWorkLog: (id: string, updates: Partial<WorkLogEntry>) => void;
+  deleteWorkLog: (id: string) => void;
+  createLeaveRequest: (request: Omit<LeaveRequest, "id" | "createdAt" | "updatedAt" | "status" | "userId" | "userName">) => void;
+  updateLeaveRequest: (id: string, updates: Partial<LeaveRequest>) => void;
+  deleteLeaveRequest: (id: string) => void;
+  getTimesheetSummary: (userId: string, period: string, startDate: string, endDate: string) => TimesheetSummary | null;
   createReview: (review: Omit<OutsourceReview, "id" | "createdAt" | "updatedAt" | "reviewerId" | "reviewerName">) => void;
   updateReview: (id: string, updates: Partial<OutsourceReview>) => void;
   deleteReview: (id: string) => void;
   environmentSetups: EnvironmentSetup[];
   createEnvironmentSetup: (setup: Omit<EnvironmentSetup, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updateEnvironmentSetup: (setup: EnvironmentSetup) => void;
+  deleteEnvironmentSetup: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -42,6 +53,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [notifications, setNotifications] = useState<NotificationMessage[]>([]);
   const [overtimeRequests, setOvertimeRequests] = useState<OvertimeRequest[]>([]);
+  const [workLogs, setWorkLogs] = useState<WorkLogEntry[]>([]);
+  const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
+  const [timesheetSummaries, setTimesheetSummaries] = useState<TimesheetSummary[]>([]);
   const [reviews, setReviews] = useState<OutsourceReview[]>([]);
   const [environmentSetups, setEnvironmentSetups] = useState<EnvironmentSetup[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -54,6 +68,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       setTickets(mockTickets);
       setNotifications(mockNotifications.filter(n => n.userId === currentUser.id));
       setOvertimeRequests([]);
+      setWorkLogs([]);
+      setLeaveRequests([]);
+      setTimesheetSummaries([]);
       setReviews([]);
       setEnvironmentSetups([]);
       setIsAuthenticated(true);
@@ -278,6 +295,154 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   };
 
+  const createWorkLog = (workLogData: Omit<WorkLogEntry, "id" | "createdAt" | "updatedAt" | "userId">) => {
+    if (!user) return;
+    
+    const newWorkLog: WorkLogEntry = {
+      ...workLogData,
+      id: `wl-${Date.now()}`,
+      userId: user.id,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    setWorkLogs([newWorkLog, ...workLogs]);
+    
+    toast({
+      title: "Đã ghi nhận thời gian làm việc",
+      description: `Thời gian làm việc đã được ghi nhận thành công`,
+    });
+  };
+
+  const updateWorkLog = (id: string, updates: Partial<WorkLogEntry>) => {
+    setWorkLogs(
+      workLogs.map(log => 
+        log.id === id 
+          ? { ...log, ...updates, updatedAt: new Date().toISOString() } 
+          : log
+      )
+    );
+    
+    toast({
+      title: "Đã cập nhật thời gian làm việc",
+      description: `Thông tin thời gian làm việc đã được cập nhật thành công`,
+    });
+  };
+
+  const deleteWorkLog = (id: string) => {
+    setWorkLogs(workLogs.filter(log => log.id !== id));
+    
+    toast({
+      title: "Đã xóa thời gian làm việc",
+      description: `Thông tin thời gian làm việc đã được xóa thành công`,
+    });
+  };
+
+  const createLeaveRequest = (requestData: Omit<LeaveRequest, "id" | "createdAt" | "updatedAt" | "status" | "userId" | "userName">) => {
+    if (!user) return;
+    
+    const newRequest: LeaveRequest = {
+      ...requestData,
+      id: `leave-${Date.now()}`,
+      userId: user.id,
+      userName: user.name,
+      status: 'pending',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    setLeaveRequests([newRequest, ...leaveRequests]);
+    
+    toast({
+      title: "Yêu cầu nghỉ phép đã được tạo",
+      description: `Yêu cầu nghỉ phép đã được gửi và đang chờ phê duyệt`,
+    });
+  };
+
+  const updateLeaveRequest = (id: string, updates: Partial<LeaveRequest>) => {
+    setLeaveRequests(
+      leaveRequests.map(request => 
+        request.id === id 
+          ? { ...request, ...updates, updatedAt: new Date().toISOString() } 
+          : request
+      )
+    );
+    
+    toast({
+      title: "Yêu cầu nghỉ phép đã cập nhật",
+      description: `Yêu cầu nghỉ phép đã được cập nhật thành công`,
+    });
+  };
+
+  const deleteLeaveRequest = (id: string) => {
+    setLeaveRequests(leaveRequests.filter(request => request.id !== id));
+    
+    toast({
+      title: "Yêu cầu nghỉ phép đã xóa",
+      description: `Yêu cầu nghỉ phép đã được xóa thành công`,
+    });
+  };
+
+  const getTimesheetSummary = (userId: string, period: string, startDate: string, endDate: string): TimesheetSummary | null => {
+    // First check if we already have a summary for this period
+    const existingSummary = timesheetSummaries.find(
+      s => s.userId === userId && s.period === period && s.startDate === startDate && s.endDate === endDate
+    );
+    
+    if (existingSummary) {
+      return existingSummary;
+    }
+    
+    // Calculate summary from work logs and leave requests
+    const userWorkLogs = workLogs.filter(
+      log => log.userId === userId && log.date >= startDate && log.date <= endDate
+    );
+    
+    const userOvertimeRequests = overtimeRequests.filter(
+      req => req.userId === userId && req.date >= startDate && req.date <= endDate && req.status === 'approved'
+    );
+    
+    const userLeaveRequests = leaveRequests.filter(
+      req => req.userId === userId && 
+             ((req.startDate >= startDate && req.startDate <= endDate) || 
+              (req.endDate >= startDate && req.endDate <= endDate)) &&
+             req.status === 'approved'
+    );
+    
+    // Basic calculations
+    const regularHours = userWorkLogs.reduce((sum, log) => sum + log.hours, 0);
+    const overtimeHours = userOvertimeRequests.reduce((sum, req) => sum + req.totalHours, 0);
+    
+    // Weekend overtime (simple calculation - in real app would check if date is weekend)
+    const weekendOvertimeHours = 0; // This would need actual date checking logic
+    
+    // Count leave days (simplified)
+    const leaveCount = userLeaveRequests.reduce((sum, req) => sum + req.totalDays, 0);
+    
+    // Calculate completion rate (simplified)
+    const daysInPeriod = 30; // Simplified - should calculate actual days in period
+    const daysLogged = new Set(userWorkLogs.map(log => log.date)).size;
+    const daysOnLeave = leaveCount;
+    const completionRate = ((daysLogged + daysOnLeave) / daysInPeriod) * 100;
+    
+    const newSummary: TimesheetSummary = {
+      userId,
+      period,
+      startDate,
+      endDate,
+      regularHours,
+      overtimeHours,
+      weekendOvertimeHours,
+      leaveCount,
+      completionRate: Math.min(completionRate, 100) // Cap at 100%
+    };
+    
+    // Save this summary for future reference
+    setTimesheetSummaries([...timesheetSummaries, newSummary]);
+    
+    return newSummary;
+  };
+
   const createReview = (reviewData: Omit<OutsourceReview, "id" | "createdAt" | "updatedAt" | "reviewerId" | "reviewerName">) => {
     if (!user) return;
     
@@ -340,12 +505,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     );
   };
 
+  const deleteEnvironmentSetup = (id: string) => {
+    setEnvironmentSetups(environmentSetups.filter(setup => setup.id !== id));
+    
+    toast({
+      title: "Thiết lập đã xóa",
+      description: `Thiết lập môi trường đã được xóa thành công`,
+    });
+  };
+
   const value: AppContextType = {
     user,
     users,
     tickets,
     notifications,
     overtimeRequests,
+    workLogs,
+    leaveRequests,
+    timesheetSummaries,
     reviews,
     unreadNotificationsCount,
     isAuthenticated,
@@ -363,12 +540,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     createOvertimeRequest,
     updateOvertimeRequest,
     deleteOvertimeRequest,
+    createWorkLog,
+    updateWorkLog,
+    deleteWorkLog,
+    createLeaveRequest,
+    updateLeaveRequest,
+    deleteLeaveRequest,
+    getTimesheetSummary,
     createReview,
     updateReview,
     deleteReview,
     environmentSetups,
     createEnvironmentSetup,
     updateEnvironmentSetup,
+    deleteEnvironmentSetup,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
