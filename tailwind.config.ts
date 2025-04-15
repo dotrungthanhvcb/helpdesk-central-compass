@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -19,6 +18,9 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Roboto', 'system-ui', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -53,7 +55,17 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Custom colors for ticket categories
+				// Vietcombank custom colors
+				vcb: {
+					'primary': '#007749',
+					'secondary': '#00A859',
+					'background': '#F5F9F6',
+					'light': '#E0F2E9',
+					'dark': '#00563B',
+					'text': '#1A1A1A',
+					'muted': '#6B7280',
+				},
+				// Keep existing custom colors for tickets
 				"tech-setup": "#D3E4FD",
 				"dev-issues": "#E5DEFF", 
 				"mentoring": "#FDE1D3",
@@ -63,11 +75,11 @@ export default {
 				"status-progress": "#0EA5E9",
 				"status-resolved": "#10B981",
 				"status-rejected": "#EF4444",
-				// Custom app colors
+				// Custom app colors - updating to VCB colors
 				"app-purple": {
-					DEFAULT: "#8B5CF6",
-					dark: "#7E69AB",
-					light: "#D6BCFA"
+					DEFAULT: "#007749",
+					dark: "#00563B",
+					light: "#00A859"
 				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',

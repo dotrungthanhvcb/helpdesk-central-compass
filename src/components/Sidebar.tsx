@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -28,41 +29,45 @@ const Sidebar = () => {
   const { user, unreadNotificationsCount, logout } = useApp();
 
   const navigation = [
-    { name: "Dashboard", href: "/", icon: LayoutDashboardIcon },
-    { name: "Tickets", href: "/tickets", icon: TicketIcon },
-    { name: "Create Ticket", href: "/tickets/new", icon: PlusCircleIcon },
-    { name: "Notifications", href: "/notifications", icon: InboxIcon, badge: unreadNotificationsCount },
-    { name: "Analytics", href: "/analytics", icon: BarChart3Icon },
-    { name: "Timesheets", href: "/timesheets", icon: ClockIcon },
-    { name: "Environment Setup", href: "/environment-setup", icon: HardDriveIcon },
+    { name: "Trang chủ", href: "/", icon: LayoutDashboardIcon },
+    { name: "Danh sách yêu cầu", href: "/tickets", icon: TicketIcon },
+    { name: "Tạo yêu cầu mới", href: "/tickets/new", icon: PlusCircleIcon },
+    { name: "Thông báo", href: "/notifications", icon: InboxIcon, badge: unreadNotificationsCount },
+    { name: "Thống kê", href: "/analytics", icon: BarChart3Icon },
+    { name: "Quản lý thời gian", href: "/timesheets", icon: ClockIcon },
+    { name: "Cài đặt môi trường", href: "/environment-setup", icon: HardDriveIcon },
   ];
 
   const isManager = user && (user.role === 'supervisor' || user.role === 'admin');
   
   if (isManager) {
     navigation.push(
-      { name: "Outsource Review", href: "/reviews", icon: StarIcon },
-      { name: "Contracts", href: "/contracts", icon: FileTextIcon },
-      { name: "Squad Allocation", href: "/squad-allocation", icon: Users }
+      { name: "Đánh giá outsource", href: "/reviews", icon: StarIcon },
+      { name: "Hợp đồng", href: "/contracts", icon: FileTextIcon },
+      { name: "Phân bổ nhân sự", href: "/squad-allocation", icon: Users }
     );
   }
 
   const adminNavigation = [
-    { name: "Users & Teams", href: "/users", icon: UsersIcon },
+    { name: "Quản lý người dùng", href: "/users", icon: UsersIcon },
   ];
 
   const userNavigation = [
-    { name: "My Profile", href: "/profile", icon: UserIcon },
-    { name: "Settings", href: "/settings", icon: SettingsIcon },
+    { name: "Thông tin cá nhân", href: "/profile", icon: UserIcon },
+    { name: "Cài đặt", href: "/settings", icon: SettingsIcon },
   ];
 
   return (
-    <div className="bg-sidebar border-r border-sidebar-border h-screen w-64 flex flex-col">
+    <div className="bg-vcb-primary border-r border-vcb-dark h-screen w-64 flex flex-col text-white">
       <div className="p-6">
-        <h1 className="text-2xl font-bold text-sidebar-foreground flex items-center">
-          <TicketIcon className="mr-2 text-app-purple" />
-          <span>Helpdesk</span>
+        <h1 className="text-xl font-bold text-white flex items-center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
+            <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="white"/>
+            <path d="M2 17L12 22L22 17V7L12 12L2 7V17Z" fill="white" fillOpacity="0.6"/>
+          </svg>
+          <span className="text-sm leading-tight">Ứng dụng quản lý<br/>outsource</span>
         </h1>
+        <div className="text-xs text-white/60 mt-1">Trung tâm Ngân hàng Số</div>
       </div>
       
       <div className="flex-1 px-3 py-2 overflow-y-auto">
@@ -74,14 +79,14 @@ const Sidebar = () => {
               className={cn(
                 "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
                 location.pathname === item.href
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                  ? "bg-vcb-dark text-white"
+                  : "text-white/80 hover:bg-vcb-dark/50 hover:text-white"
               )}
             >
               <item.icon className="mr-3 h-5 w-5" />
               <span>{item.name}</span>
               {item.badge ? (
-                <span className="ml-auto bg-app-purple text-white text-xs font-semibold rounded-full h-5 w-5 flex items-center justify-center">
+                <span className="ml-auto bg-vcb-secondary text-white text-xs font-semibold rounded-full h-5 w-5 flex items-center justify-center">
                   {item.badge}
                 </span>
               ) : null}
@@ -91,10 +96,10 @@ const Sidebar = () => {
         
         {user && user.role === 'admin' && (
           <>
-            <Separator className="my-2" />
+            <Separator className="my-2 bg-white/10" />
             <div className="px-3 py-2">
-              <h2 className="mb-2 px-2 text-xs font-semibold tracking-tight text-sidebar-foreground/70">
-                Administration
+              <h2 className="mb-2 px-2 text-xs font-semibold tracking-tight text-white/70">
+                Quản trị viên
               </h2>
               {adminNavigation.map((item) => (
                 <Link
@@ -103,8 +108,8 @@ const Sidebar = () => {
                   className={cn(
                     "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
                     location.pathname === item.href
-                      ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                      ? "bg-vcb-dark text-white"
+                      : "text-white/80 hover:bg-vcb-dark/50 hover:text-white"
                   )}
                 >
                   <item.icon className="mr-3 h-5 w-5" />
@@ -115,10 +120,10 @@ const Sidebar = () => {
           </>
         )}
         
-        <Separator className="my-2" />
+        <Separator className="my-2 bg-white/10" />
         <div className="px-3 py-2">
-          <h2 className="mb-2 px-2 text-xs font-semibold tracking-tight text-sidebar-foreground/70">
-            User
+          <h2 className="mb-2 px-2 text-xs font-semibold tracking-tight text-white/70">
+            Người dùng
           </h2>
           {userNavigation.map((item) => (
             <Link
@@ -127,8 +132,8 @@ const Sidebar = () => {
               className={cn(
                 "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
                 location.pathname === item.href
-                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                  ? "bg-vcb-dark text-white"
+                  : "text-white/80 hover:bg-vcb-dark/50 hover:text-white"
               )}
             >
               <item.icon className="mr-3 h-5 w-5" />
@@ -138,19 +143,19 @@ const Sidebar = () => {
         </div>
       </div>
       
-      <Separator className="my-2" />
+      <Separator className="my-2 bg-white/10" />
       
       {user && (
         <div className="p-4 flex flex-col">
           <div className="flex items-center mb-4">
-            <Avatar className="h-10 w-10">
+            <Avatar className="h-10 w-10 border-2 border-white/20">
               <AvatarImage src={user.avatar} alt={user.name} />
-              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+              <AvatarFallback className="bg-vcb-secondary text-white">{user.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div className="ml-3">
-              <p className="text-sm font-medium text-sidebar-foreground">{user.name}</p>
-              <p className="text-xs text-sidebar-foreground/70 flex items-center">
-                {user.role === 'admin' && <ShieldIcon className="h-3 w-3 mr-1 text-app-purple" />}
+              <p className="text-sm font-medium text-white">{user.name}</p>
+              <p className="text-xs text-white/70 flex items-center">
+                {user.role === 'admin' && <ShieldIcon className="h-3 w-3 mr-1 text-vcb-secondary" />}
                 {user.role === 'admin' ? 'Quản trị viên' : 
                  user.role === 'supervisor' ? 'Quản lý' :
                  user.role === 'agent' ? 'Nhân viên hỗ trợ' :
@@ -158,7 +163,7 @@ const Sidebar = () => {
               </p>
             </div>
           </div>
-          <Button variant="outline" className="w-full" onClick={logout}>
+          <Button variant="outline" className="w-full bg-transparent border border-white/20 text-white hover:bg-white/10" onClick={logout}>
             <LogOutIcon className="mr-2 h-4 w-4" />
             Đăng xuất
           </Button>
