@@ -86,6 +86,8 @@ const TimesheetsPage = () => {
     switch (type) {
       case "paid":
         return <Badge className="bg-blue-500">Nghỉ phép năm</Badge>;
+      case "annual":
+        return <Badge className="bg-blue-500">Nghỉ phép năm</Badge>;
       case "sick":
         return <Badge className="bg-red-500">Nghỉ ốm</Badge>;
       case "unpaid":
@@ -529,8 +531,8 @@ const TimesheetsPage = () => {
                                 <div>
                                   <CardTitle className="text-lg">{request.userName}</CardTitle>
                                   <CardDescription className="flex flex-col mt-1">
-                                    <span>{getLeaveBadge(request.type)}</span>
-                                    <span className="mt-2">{formatLeaveDuration(request)}</span>
+                                    <span>{getLeaveBadge(request.type as LeaveType)}</span>
+                                    <span className="mt-2">{formatLeaveDuration(request as LeaveRequest)}</span>
                                   </CardDescription>
                                 </div>
                                 {getStatusBadge(request.status)}

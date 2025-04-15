@@ -16,13 +16,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { format, differenceInCalendarDays, parseISO } from 'date-fns';
+import { LeaveType } from '@/types/timesheet';
 
 const LeaveRequestForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const navigate = useNavigate();
   const { createLeaveRequest } = useApp();
   const { toast } = useToast();
   
-  const [leaveType, setLeaveType] = useState('');
+  const [leaveType, setLeaveType] = useState<LeaveType>('paid');
   const [startDate, setStartDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [endDate, setEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [reason, setReason] = useState('');
@@ -46,7 +47,7 @@ const LeaveRequestForm = ({ onSuccess }: { onSuccess?: () => void }) => {
       const totalDays = calculateDays();
       
       createLeaveRequest({
-        type: leaveType as any,
+        type: leaveType,
         startDate,
         endDate,
         totalDays,
@@ -86,12 +87,13 @@ const LeaveRequestForm = ({ onSuccess }: { onSuccess?: () => void }) => {
         <form id="leave-form" onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="leaveType">Loại nghỉ phép</Label>
-            <Select value={leaveType} onValueChange={setLeaveType} required>
+            <Select value={leaveType} onValueChange={(value) => setLeaveType(value as LeaveType)} required>
               <SelectTrigger id="leaveType">
                 <SelectValue placeholder="Chọn loại nghỉ phép" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="paid">Nghỉ phép có lương</SelectItem>
+                <SelectItem value="annual">Nghỉ phép năm</SelectItem>
                 <SelectItem value="sick">Nghỉ ốm</SelectItem>
                 <SelectItem value="unpaid">Nghỉ không lương</SelectItem>
                 <SelectItem value="wfh">Làm việc tại nhà</SelectItem>
