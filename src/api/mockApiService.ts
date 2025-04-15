@@ -119,7 +119,7 @@ export const setupMockApi = () => {
     
     if (matchedEndpoint) {
       try {
-        let data = {};
+        let data: any = {};
         
         // Parse request body if it exists
         if (init?.body) {
@@ -130,8 +130,10 @@ export const setupMockApi = () => {
           }
         }
         
-        // Call the mock endpoint handler
-        const responseData = await mockEndpoints[matchedEndpoint as keyof typeof mockEndpoints](data);
+        // Call the mock endpoint handler with the parsed data
+        // Use type assertion to call the function with the appropriate parameter type
+        const handler = mockEndpoints[matchedEndpoint as keyof typeof mockEndpoints];
+        const responseData = await handler(data);
         
         // Create a mock Response object
         return new Response(JSON.stringify(responseData), {
