@@ -63,12 +63,11 @@ const TicketCard: React.FC<TicketCardProps> = ({ ticket, onClick }) => {
             </Avatar>
             <span className="text-xs text-gray-600 ml-2">{ticket.requester.name}</span>
           </div>
-          {ticket.assignedTo ? (
+          {ticket.assigneeId ? (
             <div className="flex items-center">
               <span className="text-xs text-gray-600 mr-2">Assigned to</span>
               <Avatar className="h-6 w-6">
-                <AvatarImage src={ticket.assignedTo.avatar} alt={ticket.assignedTo.name} />
-                <AvatarFallback>{ticket.assignedTo.name.charAt(0)}</AvatarFallback>
+                <AvatarFallback>{ticket.assigneeName ? ticket.assigneeName.charAt(0) : "?"}</AvatarFallback>
               </Avatar>
             </div>
           ) : (

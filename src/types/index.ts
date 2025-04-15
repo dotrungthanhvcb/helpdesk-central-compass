@@ -1,3 +1,4 @@
+
 // Re-export contract types
 export * from './contracts';
 export * from './timesheet';
@@ -20,18 +21,28 @@ export interface User {
   address?: string;
 }
 
+export type TicketStatus = 'open' | 'in progress' | 'resolved' | 'closed' | 'pending' | 'approved' | 'rejected';
+export type TicketCategory = 'tech_setup' | 'dev_issues' | 'mentoring' | 'hr_matters';
+export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
+export type UserRole = 'admin' | 'supervisor' | 'agent' | 'approver' | 'requester';
+export type DeviceType = 'laptop' | 'pc' | 'vm' | 'byod';
+export type SetupLocation = 'onsite' | 'remote';
+export type SetupItemStatus = 'pending' | 'in_progress' | 'done' | 'blocked';
+
 export interface Ticket {
   id: string;
   title: string;
   description: string;
-  status: 'open' | 'in progress' | 'resolved' | 'closed';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  category: string;
+  status: TicketStatus;
+  priority: TicketPriority;
+  category: TicketCategory;
   requester: User;
   assigneeId?: string;
   assigneeName?: string;
   comments?: Comment[];
   attachments?: string[];
+  approvers?: User[];
+  tags?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -54,6 +65,18 @@ export interface NotificationMessage {
   link: string;
   isRead: boolean;
   createdAt: string;
+  ticketId?: string;
+}
+
+export interface Attachment {
+  id: string;
+  ticketId: string;
+  fileName: string;
+  fileSize: number;
+  fileType: string;
+  url: string;
+  uploadedAt: string;
+  uploadedBy: string;
 }
 
 export interface OvertimeRequest {
@@ -126,12 +149,35 @@ export interface OutsourceReview {
   updatedAt: string;
 }
 
+export interface SetupItem {
+  id: string;
+  title: string;
+  description?: string;
+  category: 'device' | 'mdm' | 'os' | 'software' | 'account';
+  status: SetupItemStatus;
+  notes?: string;
+  ticketId?: string;
+  completedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface EnvironmentSetup {
   id: string;
-  name: string;
-  description?: string;
-  steps: string;
-  link?: string;
+  employeeId: string;
+  employeeName: string;
+  deviceType: DeviceType;
+  setupLocation: SetupLocation;
+  requestDate: string;
+  responsibleId?: string;
+  responsibleName?: string;
+  status: TicketStatus;
+  notes?: string;
+  items: SetupItem[];
+  completionDate?: string;
+  verifiedById?: string;
+  verifiedByName?: string;
+  verificationNotes?: string;
   createdAt: string;
   updatedAt: string;
 }
