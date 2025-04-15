@@ -8,6 +8,7 @@ import { setupMockApi } from './api/mockApiService';
 // Set up mock API for development
 if (import.meta.env.DEV) {
   setupMockApi();
+  console.log("sss");
 }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
