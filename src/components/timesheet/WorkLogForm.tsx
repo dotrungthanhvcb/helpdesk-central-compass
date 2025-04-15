@@ -43,11 +43,11 @@ const WorkLogForm = ({ onSuccess }: { onSuccess?: () => void }) => {
       
       createWorkLog({
         date,
+        hours,
+        description: taskDescription,
+        projectName,
         startTime,
         endTime,
-        hours,
-        projectName,
-        taskDescription,
       });
       
       toast({

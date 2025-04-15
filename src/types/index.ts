@@ -28,6 +28,7 @@ export type UserRole = 'admin' | 'supervisor' | 'agent' | 'approver' | 'requeste
 export type DeviceType = 'laptop' | 'pc' | 'vm' | 'byod';
 export type SetupLocation = 'onsite' | 'remote';
 export type SetupItemStatus = 'pending' | 'in_progress' | 'done' | 'blocked';
+export type ReviewCriteriaScore = 1 | 2 | 3 | 4 | 5;
 
 export interface Ticket {
   id: string;
@@ -40,7 +41,7 @@ export interface Ticket {
   assigneeId?: string;
   assigneeName?: string;
   comments?: Comment[];
-  attachments?: string[];
+  attachments?: Attachment[];
   approvers?: User[];
   tags?: string[];
   createdAt: string;
@@ -97,6 +98,8 @@ export interface WorkLogEntry {
   id: string;
   userId: string;
   date: string;
+  startTime: string;
+  endTime: string;
   hours: number;
   description: string;
   projectId?: string;
@@ -141,10 +144,16 @@ export interface OutsourceReview {
   reviewerName: string;
   projectId?: string;
   projectName?: string;
-  qualityRating: number;
-  communicationRating: number;
-  timelinessRating: number;
-  comments?: string;
+  reviewDate: string;
+  criteria: {
+    technicalQuality: ReviewCriteriaScore;
+    professionalAttitude: ReviewCriteriaScore;
+    communication: ReviewCriteriaScore;
+    ruleCompliance: ReviewCriteriaScore;
+    initiative: ReviewCriteriaScore;
+  };
+  strengths?: string;
+  areasToImprove?: string;
   createdAt: string;
   updatedAt: string;
 }

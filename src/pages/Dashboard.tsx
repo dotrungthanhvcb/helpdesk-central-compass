@@ -25,7 +25,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   const pendingTickets = tickets.filter((ticket) => ticket.status === "pending");
-  const inProgressTickets = tickets.filter((ticket) => ticket.status === "in_progress");
+  const inProgressTickets = tickets.filter((ticket) => ticket.status === "in progress");
   const resolvedTickets = tickets.filter((ticket) => ticket.status === "resolved" || ticket.status === "approved");
   
   const filteredTickets = categoryFilter === "all" 
@@ -33,7 +33,7 @@ const Dashboard = () => {
     : tickets.filter((ticket) => ticket.category === categoryFilter);
 
   const myTickets = tickets.filter(ticket => 
-    ticket.requester.id === user?.id || ticket.assignedTo?.id === user?.id
+    ticket.requester.id === user?.id || ticket.assigneeId === user?.id
   );
 
   const statusCounts = {
