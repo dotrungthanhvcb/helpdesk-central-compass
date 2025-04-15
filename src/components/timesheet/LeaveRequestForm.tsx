@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { format, differenceInCalendarDays, parseISO } from 'date-fns';
-import { LeaveType } from '@/types/timesheet';
+import { LeaveType } from '@/types/index';
 
 const LeaveRequestForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const navigate = useNavigate();
