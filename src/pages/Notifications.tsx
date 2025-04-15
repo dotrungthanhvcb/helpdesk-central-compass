@@ -1,4 +1,3 @@
-
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -72,7 +71,7 @@ const Notifications = () => {
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <h4 className="text-sm font-medium">{notification.title}</h4>
+                      <h4 className="text-sm font-medium">{notification.title || "Thông báo mới"}</h4>
                       <p className="text-sm text-gray-600">{notification.message}</p>
                     </div>
                     <span className="text-xs text-gray-500">
@@ -109,7 +108,7 @@ const Notifications = () => {
                 >
                   <div className="flex items-start justify-between">
                     <div>
-                      <h4 className="text-sm font-medium text-gray-700">{notification.title}</h4>
+                      <h4 className="text-sm font-medium text-gray-700">{notification.title || "Thông báo"}</h4>
                       <p className="text-sm text-gray-500">{notification.message}</p>
                     </div>
                     <span className="text-xs text-gray-400">

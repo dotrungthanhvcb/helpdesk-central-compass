@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { formatDistanceToNow, format } from "date-fns";
@@ -81,8 +80,8 @@ const TicketDetail = () => {
   const canApprove = user?.role === "approver" || user?.role === "supervisor";
   const canReject = user?.role === "approver" || user?.role === "supervisor";
   const canAssign = user?.role === "agent" || user?.role === "supervisor";
-  const isAssigned = !!ticket.assignedTo;
-  const isCurrentUserAssigned = ticket.assignedTo?.id === user?.id;
+  const isAssigned = !!ticket.assigneeId;
+  const isCurrentUserAssigned = ticket.assigneeId === user?.id;
 
   return (
     <div className="space-y-6">
@@ -278,7 +277,7 @@ const TicketDetail = () => {
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => updateTicket(ticket.id, { assignedTo: user })}
+                  onClick={() => updateTicket(ticket.id, { assigneeId: user?.id })}
                 >
                   <UserIcon className="mr-2 h-4 w-4" />
                   <span>Assign to Me</span>

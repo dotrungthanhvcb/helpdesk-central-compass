@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
@@ -263,8 +262,8 @@ const TimesheetsPage = () => {
                         )}
                       </CardHeader>
                       <CardContent>
-                        {log.taskDescription && (
-                          <p className="text-sm text-muted-foreground">{log.taskDescription}</p>
+                        {log.description && (
+                          <p className="text-sm text-muted-foreground">{log.description}</p>
                         )}
                       </CardContent>
                       <CardFooter className="bg-muted py-2">

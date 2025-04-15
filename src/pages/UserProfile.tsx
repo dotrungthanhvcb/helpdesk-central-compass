@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useApp } from "@/contexts/AppContext";
 import { Button } from "@/components/ui/button";
@@ -35,9 +34,7 @@ const UserProfile = () => {
     return <div>Loading...</div>;
   }
 
-  const userTickets = tickets.filter(ticket => 
-    ticket.requester.id === user.id || ticket.assignedTo?.id === user.id
-  );
+  const assignedTickets = tickets.filter(ticket => ticket.assigneeId === user?.id);
 
   const handleProfileUpdate = () => {
     updateUser(user.id, {
@@ -52,8 +49,6 @@ const UserProfile = () => {
   };
 
   const handlePasswordChange = () => {
-    // In a real app, this would validate the current password
-    // and send the new password to the backend
     if (newPassword !== confirmPassword) {
       toast({
         title: "Mật khẩu không khớp",
@@ -63,13 +58,11 @@ const UserProfile = () => {
       return;
     }
 
-    // Mock password change
     toast({
       title: "Mật khẩu đã thay đổi",
       description: "Mật khẩu của bạn đã được thay đổi thành công.",
     });
 
-    // Reset fields
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
@@ -243,9 +236,9 @@ const UserProfile = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {userTickets.length > 0 ? (
+              {assignedTickets.length > 0 ? (
                 <div className="space-y-4">
-                  {userTickets.map((ticket: Ticket) => (
+                  {assignedTickets.map((ticket: Ticket) => (
                     <div key={ticket.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
                         <div className="flex items-center gap-2">

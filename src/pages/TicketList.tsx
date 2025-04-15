@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -75,7 +74,7 @@ const TicketList = () => {
   });
 
   const pendingTickets = sortedTickets.filter((ticket) => ticket.status === "pending");
-  const inProgressTickets = sortedTickets.filter((ticket) => ticket.status === "in_progress");
+  const inProgressTickets = sortedTickets.filter((ticket) => ticket.status === "in progress");
   const resolvedTickets = sortedTickets.filter((ticket) => 
     ticket.status === "resolved" || ticket.status === "approved"
   );
@@ -223,8 +222,8 @@ const TicketList = () => {
                     Chờ xử lý
                   </DropdownMenuCheckboxItem>
                   <DropdownMenuCheckboxItem
-                    checked={statusFilter.includes("in_progress")}
-                    onCheckedChange={() => toggleStatusFilter("in_progress")}
+                    checked={statusFilter.includes("in progress")}
+                    onCheckedChange={() => toggleStatusFilter("in progress")}
                   >
                     Đang xử lý
                   </DropdownMenuCheckboxItem>
