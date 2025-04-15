@@ -1,6 +1,6 @@
 
 import { User, Ticket, TicketStatus, TicketCategory, TicketPriority, OvertimeRequest, OutsourceReview, EnvironmentSetup, LeaveRequest } from "@/types";
-import { Contract, Squad, Project, Assignment } from "@/types/contracts";
+import { Contract, Squad, Project, Assignment, ContractType, ContractStatus, SquadRole } from "@/types/contracts";
 import { format, addDays, subDays, differenceInDays } from "date-fns";
 
 // Helper functions

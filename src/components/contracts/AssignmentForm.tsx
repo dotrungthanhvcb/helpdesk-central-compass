@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "@/contexts/AppContext";
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
-import { SquadRole } from "@/types/contracts";
+import { SquadRole, Assignment } from "@/types/contracts";
 
 interface AssignmentFormProps {
   onSuccess?: () => void;
@@ -44,7 +45,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   const [projectId, setProjectId] = useState<string>("");
   const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date | undefined>(undefined);
-  const [status, setStatus] = useState<"active" | "completed" | "upcoming">("active");
+  const [status, setStatus] = useState<Assignment['status']>("active");
   const [utilization, setUtilization] = useState<number>(100);
 
   useEffect(() => {
@@ -163,6 +164,9 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
               <SelectItem value="qa">QA Engineer</SelectItem>
               <SelectItem value="consultant">Consultant</SelectItem>
               <SelectItem value="manager">Manager</SelectItem>
+              <SelectItem value="tester">Tester</SelectItem>
+              <SelectItem value="analyst">Analyst</SelectItem>
+              <SelectItem value="devops">DevOps</SelectItem>
               <SelectItem value="other">Khác</SelectItem>
             </SelectContent>
           </Select>
@@ -220,7 +224,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
           <Label htmlFor="status">Trạng thái</Label>
           <Select 
             value={status} 
-            onValueChange={(value) => setStatus(value as "active" | "completed" | "upcoming")}
+            onValueChange={(value) => setStatus(value as Assignment['status'])}
           >
             <SelectTrigger id="status">
               <SelectValue placeholder="Chọn trạng thái" />
@@ -229,6 +233,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
               <SelectItem value="active">Đang hoạt động</SelectItem>
               <SelectItem value="upcoming">Sắp bắt đầu</SelectItem>
               <SelectItem value="completed">Đã hoàn thành</SelectItem>
+              <SelectItem value="planned">Đã lên kế hoạch</SelectItem>
             </SelectContent>
           </Select>
         </div>

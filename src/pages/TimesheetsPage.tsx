@@ -28,12 +28,10 @@ const TimesheetsPage = () => {
   const [activeTab, setActiveTab] = useState("workLogs");
   const [viewMode, setViewMode] = useState("daily"); // daily, weekly, monthly
   
-  // Filter requests relevant to the user
   const myOvertimeRequests = overtimeRequests.filter(request => request.userId === user?.id);
   const myLeaveRequests = leaveRequests.filter(request => request.userId === user?.id);
   const myWorkLogs = workLogs.filter(log => log.userId === user?.id);
   
-  // For supervisors/admins - requests that need approval
   const pendingApprovalOvertimeRequests = user?.role === "supervisor" || user?.role === "admin" 
     ? overtimeRequests.filter(request => request.status === "pending") 
     : [];
@@ -43,7 +41,6 @@ const TimesheetsPage = () => {
     : [];
 
   const handleApproveOvertimeRequest = (requestId: string) => {
-    // Logic to handle approval via updateOvertimeRequest
     toast({
       title: "Yêu cầu đã được phê duyệt",
       description: "Yêu cầu OT đã được phê duyệt thành công"
@@ -51,7 +48,6 @@ const TimesheetsPage = () => {
   };
 
   const handleRejectOvertimeRequest = (requestId: string) => {
-    // Logic to handle rejection via updateOvertimeRequest
     toast({
       title: "Yêu cầu đã bị từ chối",
       description: "Yêu cầu OT đã bị từ chối"
@@ -59,7 +55,6 @@ const TimesheetsPage = () => {
   };
 
   const handleApproveLeaveRequest = (requestId: string) => {
-    // Logic to handle approval via updateLeaveRequest
     toast({
       title: "Yêu cầu nghỉ phép đã được phê duyệt",
       description: "Yêu cầu nghỉ phép đã được phê duyệt thành công"
@@ -67,7 +62,6 @@ const TimesheetsPage = () => {
   };
 
   const handleRejectLeaveRequest = (requestId: string) => {
-    // Logic to handle rejection via updateLeaveRequest
     toast({
       title: "Yêu cầu nghỉ phép đã bị từ chối",
       description: "Yêu cầu nghỉ phép đã bị từ chối"
@@ -89,7 +83,7 @@ const TimesheetsPage = () => {
 
   const getLeaveBadge = (type: LeaveType) => {
     switch (type) {
-      case "annual":
+      case "paid":
         return <Badge className="bg-blue-500">Nghỉ phép năm</Badge>;
       case "sick":
         return <Badge className="bg-red-500">Nghỉ ốm</Badge>;
@@ -231,7 +225,6 @@ const TimesheetsPage = () => {
           )}
         </TabsList>
         
-        {/* Work Logs Tab */}
         <TabsContent value="workLogs">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -299,7 +292,6 @@ const TimesheetsPage = () => {
           </Card>
         </TabsContent>
         
-        {/* Overtime Requests Tab */}
         <TabsContent value="overtime">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -369,7 +361,6 @@ const TimesheetsPage = () => {
           </Card>
         </TabsContent>
         
-        {/* Leave Requests Tab */}
         <TabsContent value="leave">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
@@ -443,7 +434,6 @@ const TimesheetsPage = () => {
           </Card>
         </TabsContent>
         
-        {/* Admin/Supervisor Approval Tab */}
         {(user?.role === "supervisor" || user?.role === "admin") && (
           <TabsContent value="approvals">
             <Tabs defaultValue="overtimeApprovals">
