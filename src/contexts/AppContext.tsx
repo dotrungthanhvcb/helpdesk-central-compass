@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { User, Ticket, NotificationMessage, OvertimeRequest, OutsourceReview, EnvironmentSetup, WorkLogEntry, LeaveRequest, TimesheetSummary } from "@/types";
+import { User, Ticket, NotificationMessage, OvertimeRequest, OutsourceReview, EnvironmentSetup, WorkLogEntry, LeaveRequest, TimesheetSummary, Contract, Document, Squad, Project, Assignment } from "@/types";
 import { currentUser, users as mockUsers, tickets as mockTickets, notifications as mockNotifications } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
 
@@ -43,6 +43,25 @@ interface AppContextType {
   createEnvironmentSetup: (setup: Omit<EnvironmentSetup, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updateEnvironmentSetup: (setup: EnvironmentSetup) => void;
   deleteEnvironmentSetup: (id: string) => void;
+  contracts: Contract[];
+  documents: Document[];
+  squads: Squad[];
+  projects: Project[];
+  assignments: Assignment[];
+  createContract: (contract: Omit<Contract, "id" | "createdAt" | "updatedAt" | "documents">) => Promise<string>;
+  updateContract: (id: string, updates: Partial<Contract>) => void;
+  deleteContract: (id: string) => void;
+  uploadDocument: (document: Omit<Document, "id" | "uploadedAt" | "uploadedBy" | "uploadedByName">, file: File) => Promise<string>;
+  deleteDocument: (id: string) => void;
+  createSquad: (squad: Omit<Squad, "id" | "createdAt">) => string;
+  updateSquad: (id: string, updates: Partial<Squad>) => void;
+  deleteSquad: (id: string) => void;
+  createProject: (project: Omit<Project, "id" | "createdAt">) => string;
+  updateProject: (id: string, updates: Partial<Project>) => void;
+  deleteProject: (id: string) => void;
+  createAssignment: (assignment: Omit<Assignment, "id" | "createdAt" | "updatedAt">) => string;
+  updateAssignment: (id: string, updates: Partial<Assignment>) => void;
+  deleteAssignment: (id: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -58,10 +77,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [timesheetSummaries, setTimesheetSummaries] = useState<TimesheetSummary[]>([]);
   const [reviews, setReviews] = useState<OutsourceReview[]>([]);
   const [environmentSetups, setEnvironmentSetups] = useState<EnvironmentSetup[]>([]);
+  const [contracts, setContracts] = useState<Contract[]>([]);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [squads, setSquads] = useState<Squad[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Auto-login for demo purposes
     const autoLogin = async () => {
       setUser(currentUser);
       setUsers(mockUsers);
@@ -82,7 +105,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      // Mock login - in a real app, this would be an API call
       if (email && password) {
         setUser(currentUser);
         setUsers(mockUsers);
@@ -384,7 +406,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const getTimesheetSummary = (userId: string, period: string, startDate: string, endDate: string): TimesheetSummary | null => {
-    // First check if we already have a summary for this period
     const existingSummary = timesheetSummaries.find(
       s => s.userId === userId && s.period === period && s.startDate === startDate && s.endDate === endDate
     );
@@ -393,7 +414,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return existingSummary;
     }
     
-    // Calculate summary from work logs and leave requests
     const userWorkLogs = workLogs.filter(
       log => log.userId === userId && log.date >= startDate && log.date <= endDate
     );
@@ -409,18 +429,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
              req.status === 'approved'
     );
     
-    // Basic calculations
     const regularHours = userWorkLogs.reduce((sum, log) => sum + log.hours, 0);
     const overtimeHours = userOvertimeRequests.reduce((sum, req) => sum + req.totalHours, 0);
     
-    // Weekend overtime (simple calculation - in real app would check if date is weekend)
-    const weekendOvertimeHours = 0; // This would need actual date checking logic
+    const weekendOvertimeHours = 0;
     
-    // Count leave days (simplified)
     const leaveCount = userLeaveRequests.reduce((sum, req) => sum + req.totalDays, 0);
     
-    // Calculate completion rate (simplified)
-    const daysInPeriod = 30; // Simplified - should calculate actual days in period
+    const daysInPeriod = 30;
     const daysLogged = new Set(userWorkLogs.map(log => log.date)).size;
     const daysOnLeave = leaveCount;
     const completionRate = ((daysLogged + daysOnLeave) / daysInPeriod) * 100;
@@ -434,10 +450,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       overtimeHours,
       weekendOvertimeHours,
       leaveCount,
-      completionRate: Math.min(completionRate, 100) // Cap at 100%
+      completionRate: Math.min(completionRate, 100)
     };
     
-    // Save this summary for future reference
     setTimesheetSummaries([...timesheetSummaries, newSummary]);
     
     return newSummary;
@@ -484,6 +499,286 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     toast({
       title: "Đánh giá đã xóa",
       description: `Đánh giá đã được xóa thành công`,
+    });
+  };
+
+  const createContract = async (contractData: Omit<Contract, "id" | "createdAt" | "updatedAt" | "documents">) => {
+    if (!user) return Promise.reject("User not authenticated");
+    
+    const newContract: Contract = {
+      ...contractData,
+      id: `contract-${Date.now()}`,
+      documents: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    setContracts([newContract, ...contracts]);
+    
+    toast({
+      title: "Hợp đồng đã được tạo",
+      description: `Hợp đồng cho ${newContract.staffName} đã được tạo thành công`,
+    });
+    
+    return Promise.resolve(newContract.id);
+  };
+
+  const updateContract = (id: string, updates: Partial<Contract>) => {
+    setContracts(
+      contracts.map(contract => 
+        contract.id === id 
+          ? { ...contract, ...updates, updatedAt: new Date().toISOString() } 
+          : contract
+      )
+    );
+    
+    toast({
+      title: "Hợp đồng đã cập nhật",
+      description: `Hợp đồng đã được cập nhật thành công`,
+    });
+  };
+
+  const deleteContract = (id: string) => {
+    setContracts(contracts.filter(contract => contract.id !== id));
+    
+    toast({
+      title: "Hợp đồng đã xóa",
+      description: `Hợp đồng đã được xóa thành công`,
+    });
+  };
+
+  const uploadDocument = async (
+    documentData: Omit<Document, "id" | "uploadedAt" | "uploadedBy" | "uploadedByName">, 
+    file: File
+  ) => {
+    if (!user) return Promise.reject("User not authenticated");
+    
+    const newDocument: Document = {
+      ...documentData,
+      id: `doc-${Date.now()}`,
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: user.id,
+      uploadedByName: user.name,
+      size: file.size,
+    };
+    
+    setDocuments([newDocument, ...documents]);
+    
+    setContracts(
+      contracts.map(contract => 
+        contract.id === documentData.contractId
+          ? { 
+              ...contract, 
+              documents: [...contract.documents, newDocument],
+              updatedAt: new Date().toISOString() 
+            } 
+          : contract
+      )
+    );
+    
+    toast({
+      title: "Tài liệu đã tải lên",
+      description: `Tài liệu ${newDocument.name} đã được tải lên thành công`,
+    });
+    
+    return Promise.resolve(newDocument.id);
+  };
+
+  const deleteDocument = (id: string) => {
+    const document = documents.find(doc => doc.id === id);
+    
+    if (!document) {
+      toast({
+        title: "Lỗi",
+        description: "Không tìm thấy tài liệu",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setDocuments(documents.filter(doc => doc.id !== id));
+    
+    setContracts(
+      contracts.map(contract => 
+        contract.id === document.contractId
+          ? { 
+              ...contract, 
+              documents: contract.documents.filter(doc => doc.id !== id),
+              updatedAt: new Date().toISOString() 
+            } 
+          : contract
+      )
+    );
+    
+    toast({
+      title: "Tài liệu đã xóa",
+      description: `Tài liệu đã được xóa thành công`,
+    });
+  };
+
+  const createSquad = (squadData: Omit<Squad, "id" | "createdAt">) => {
+    if (!user) return "";
+    
+    const newSquad: Squad = {
+      ...squadData,
+      id: `squad-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    };
+    
+    setSquads([newSquad, ...squads]);
+    
+    toast({
+      title: "Nhóm đã được tạo",
+      description: `Nhóm ${newSquad.name} đã được tạo thành công`,
+    });
+    
+    return newSquad.id;
+  };
+
+  const updateSquad = (id: string, updates: Partial<Squad>) => {
+    setSquads(
+      squads.map(squad => 
+        squad.id === id 
+          ? { ...squad, ...updates } 
+          : squad
+      )
+    );
+    
+    if (updates.name) {
+      setAssignments(
+        assignments.map(assignment => 
+          assignment.squadId === id 
+            ? { ...assignment, squadName: updates.name } 
+            : assignment
+        )
+      );
+    }
+    
+    toast({
+      title: "Nhóm đã cập nhật",
+      description: `Thông tin nhóm đã được cập nhật thành công`,
+    });
+  };
+
+  const deleteSquad = (id: string) => {
+    setSquads(squads.filter(squad => squad.id !== id));
+    
+    setAssignments(
+      assignments.map(assignment => 
+        assignment.squadId === id 
+          ? { ...assignment, squadId: undefined, squadName: undefined } 
+          : assignment
+      )
+    );
+    
+    toast({
+      title: "Nhóm đã xóa",
+      description: `Nhóm đã được xóa thành công`,
+    });
+  };
+
+  const createProject = (projectData: Omit<Project, "id" | "createdAt">) => {
+    if (!user) return "";
+    
+    const newProject: Project = {
+      ...projectData,
+      id: `project-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+    };
+    
+    setProjects([newProject, ...projects]);
+    
+    toast({
+      title: "Dự án đã được tạo",
+      description: `Dự án ${newProject.name} đã được tạo thành công`,
+    });
+    
+    return newProject.id;
+  };
+
+  const updateProject = (id: string, updates: Partial<Project>) => {
+    setProjects(
+      projects.map(project => 
+        project.id === id 
+          ? { ...project, ...updates } 
+          : project
+      )
+    );
+    
+    if (updates.name) {
+      setAssignments(
+        assignments.map(assignment => 
+          assignment.projectId === id 
+            ? { ...assignment, projectName: updates.name } 
+            : assignment
+        )
+      );
+    }
+    
+    toast({
+      title: "Dự án đã cập nhật",
+      description: `Thông tin dự án đã được cập nhật thành công`,
+    });
+  };
+
+  const deleteProject = (id: string) => {
+    setProjects(projects.filter(project => project.id !== id));
+    
+    setAssignments(
+      assignments.map(assignment => 
+        assignment.projectId === id 
+          ? { ...assignment, projectId: undefined, projectName: undefined } 
+          : assignment
+      )
+    );
+    
+    toast({
+      title: "Dự án đã xóa",
+      description: `Dự án đã được xóa thành công`,
+    });
+  };
+
+  const createAssignment = (assignmentData: Omit<Assignment, "id" | "createdAt" | "updatedAt">) => {
+    if (!user) return "";
+    
+    const newAssignment: Assignment = {
+      ...assignmentData,
+      id: `assignment-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    
+    setAssignments([newAssignment, ...assignments]);
+    
+    toast({
+      title: "Phân công đã được tạo",
+      description: `Phân công cho ${newAssignment.staffName} đã được tạo thành công`,
+    });
+    
+    return newAssignment.id;
+  };
+
+  const updateAssignment = (id: string, updates: Partial<Assignment>) => {
+    setAssignments(
+      assignments.map(assignment => 
+        assignment.id === id 
+          ? { ...assignment, ...updates, updatedAt: new Date().toISOString() } 
+          : assignment
+      )
+    );
+    
+    toast({
+      title: "Phân công đã cập nhật",
+      description: `Thông tin phân công đã được cập nhật thành công`,
+    });
+  };
+
+  const deleteAssignment = (id: string) => {
+    setAssignments(assignments.filter(assignment => assignment.id !== id));
+    
+    toast({
+      title: "Phân công đã xóa",
+      description: `Phân công đã được xóa thành công`,
     });
   };
 
@@ -554,6 +849,25 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     createEnvironmentSetup,
     updateEnvironmentSetup,
     deleteEnvironmentSetup,
+    contracts,
+    documents,
+    squads,
+    projects,
+    assignments,
+    createContract,
+    updateContract,
+    deleteContract,
+    uploadDocument,
+    deleteDocument,
+    createSquad,
+    updateSquad,
+    deleteSquad,
+    createProject,
+    updateProject,
+    deleteProject,
+    createAssignment,
+    updateAssignment,
+    deleteAssignment,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

@@ -14,7 +14,9 @@ import {
   ShieldIcon,
   ClockIcon,
   StarIcon,
-  HardDriveIcon
+  HardDriveIcon,
+  FileTextIcon,
+  UsersThreeIcon
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -32,16 +34,20 @@ const Sidebar = () => {
     { name: "Create Ticket", href: "/tickets/new", icon: PlusCircleIcon },
     { name: "Notifications", href: "/notifications", icon: InboxIcon, badge: unreadNotificationsCount },
     { name: "Analytics", href: "/analytics", icon: BarChart3Icon },
-    // Add new modules
+    // Add new contract module navigation items
     { name: "Timesheets", href: "/timesheets", icon: ClockIcon },
     { name: "Environment Setup", href: "/environment-setup", icon: HardDriveIcon },
   ];
 
-  // Only show Outsource Review for supervisors or admins
+  // Only show Outsource Review and Contracts for supervisors or admins
   const isManager = user && (user.role === 'supervisor' || user.role === 'admin');
   
   if (isManager) {
-    navigation.push({ name: "Outsource Review", href: "/reviews", icon: StarIcon });
+    navigation.push(
+      { name: "Outsource Review", href: "/reviews", icon: StarIcon },
+      { name: "Contracts", href: "/contracts", icon: FileTextIcon },
+      { name: "Squad Allocation", href: "/squad-allocation", icon: UsersThreeIcon }
+    );
   }
 
   // Admin-only navigation items
@@ -64,27 +70,29 @@ const Sidebar = () => {
         </h1>
       </div>
       
-      <div className="flex-1 px-3 py-2 space-y-1">
-        {navigation.map((item) => (
-          <Link
-            key={item.name}
-            to={item.href}
-            className={cn(
-              "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
-              location.pathname === item.href
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-            )}
-          >
-            <item.icon className="mr-3 h-5 w-5" />
-            <span>{item.name}</span>
-            {item.badge ? (
-              <span className="ml-auto bg-app-purple text-white text-xs font-semibold rounded-full h-5 w-5 flex items-center justify-center">
-                {item.badge}
-              </span>
-            ) : null}
-          </Link>
-        ))}
+      <div className="flex-1 px-3 py-2 overflow-y-auto">
+        <div className="space-y-1">
+          {navigation.map((item) => (
+            <Link
+              key={item.name}
+              to={item.href}
+              className={cn(
+                "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
+                location.pathname === item.href
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+              )}
+            >
+              <item.icon className="mr-3 h-5 w-5" />
+              <span>{item.name}</span>
+              {item.badge ? (
+                <span className="ml-auto bg-app-purple text-white text-xs font-semibold rounded-full h-5 w-5 flex items-center justify-center">
+                  {item.badge}
+                </span>
+              ) : null}
+            </Link>
+          ))}
+        </div>
         
         {user && user.role === 'admin' && (
           <>

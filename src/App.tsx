@@ -26,6 +26,10 @@ import OutsourceReviewPage from "./pages/OutsourceReviewPage";
 import ReviewDetailPage from "./pages/ReviewDetailPage";
 import EnvironmentSetupPage from "./pages/EnvironmentSetupPage";
 import EnvironmentSetupDetailPage from "./pages/EnvironmentSetupDetailPage";
+import ContractsPage from "./pages/contracts/ContractsPage";
+import ContractDetailPage from "./pages/contracts/ContractDetailPage";
+import CreateContractPage from "./pages/contracts/CreateContractPage";
+import SquadAllocationPage from "./pages/contracts/SquadAllocationPage";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +67,12 @@ const App = () => (
             {/* Environment Setup module routes */}
             <Route path="/environment-setup" element={<AppLayout><EnvironmentSetupPage /></AppLayout>} />
             <Route path="/environment-setup/:id" element={<AppLayout><EnvironmentSetupDetailPage /></AppLayout>} />
+
+            {/* Contracts & Assignment module routes */}
+            <Route path="/contracts" element={<AppLayout><ContractsPage /></AppLayout>} />
+            <Route path="/contracts/new" element={<AppLayout><CreateContractPage /></AppLayout>} />
+            <Route path="/contracts/:id" element={<AppLayout><ContractDetailPage /></AppLayout>} />
+            <Route path="/squad-allocation" element={<AppLayout><SquadAllocationPage /></AppLayout>} />
             
             <Route path="*" element={<NotFound />} />
           </Routes>
