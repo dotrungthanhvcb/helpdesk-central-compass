@@ -3,10 +3,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AppProvider } from "@/contexts/AppContext";
 import AppLayout from "@/components/AppLayout";
-import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import TicketList from "./pages/TicketList";
@@ -31,7 +30,14 @@ import ContractDetailPage from "./pages/contracts/ContractDetailPage";
 import CreateContractPage from "./pages/contracts/CreateContractPage";
 import SquadAllocationPage from "./pages/contracts/SquadAllocationPage";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -41,9 +47,10 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
             <Route path="/login" element={<Login />} />
             
-            <Route path="/" element={<AppLayout><Dashboard /></AppLayout>} />
+            <Route path="/dashboard" element={<AppLayout><Dashboard /></AppLayout>} />
             <Route path="/tickets" element={<AppLayout><TicketList /></AppLayout>} />
             <Route path="/tickets/new" element={<AppLayout><CreateTicket /></AppLayout>} />
             <Route path="/tickets/:id" element={<AppLayout><TicketDetail /></AppLayout>} />

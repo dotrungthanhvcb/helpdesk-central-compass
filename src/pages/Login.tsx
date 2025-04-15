@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useApp } from "@/contexts/AppContext";
 import { TicketIcon } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
   const [email, setEmail] = useState("nguyen.van.a@example.com");
@@ -14,6 +15,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useApp();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,8 +24,14 @@ const Login = () => {
     try {
       const success = await login(email, password);
       if (success) {
-        navigate("/");
+        navigate("/dashboard");
       }
+    } catch (error: any) {
+      toast({
+        title: "Đăng nhập thất bại",
+        description: error.message || "Email hoặc mật khẩu không đúng",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -34,7 +42,7 @@ const Login = () => {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-2 text-center">
           <div className="flex justify-center mb-4">
-            <div className="h-16 w-16 bg-app-purple rounded-full flex items-center justify-center">
+            <div className="h-16 w-16 bg-purple-600 rounded-full flex items-center justify-center">
               <TicketIcon className="h-10 w-10 text-white" />
             </div>
           </div>
@@ -59,7 +67,7 @@ const Login = () => {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Mật khẩu</Label>
-                <a href="#" className="text-xs text-app-purple hover:underline">
+                <a href="#" className="text-xs text-purple-600 hover:underline">
                   Quên mật khẩu?
                 </a>
               </div>
@@ -73,7 +81,7 @@ const Login = () => {
             </div>
           </CardContent>
           <CardFooter>
-            <Button className="w-full bg-app-purple hover:bg-app-purple-dark" disabled={loading}>
+            <Button className="w-full bg-purple-600 hover:bg-purple-700" disabled={loading}>
               {loading ? "Đang đăng nhập..." : "Đăng nhập"}
             </Button>
           </CardFooter>
