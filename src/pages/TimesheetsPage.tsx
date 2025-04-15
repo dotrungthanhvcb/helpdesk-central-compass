@@ -6,7 +6,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { OvertimeRequest, LeaveRequest, WorkLogEntry, LeaveType } from "@/types";
+import { OvertimeRequest, WorkLogEntry } from "@/types";
+import { LeaveRequest, LeaveType } from "@/types/timesheet";
 import { format, isAfter, parseISO } from "date-fns";
 import { 
   ClockIcon, 
