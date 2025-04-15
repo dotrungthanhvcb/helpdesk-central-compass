@@ -1,4 +1,3 @@
-
 import { Ticket, User, Comment, Attachment, NotificationMessage, TicketStatus, TicketCategory, TicketPriority } from "@/types";
 
 export const users: User[] = [
@@ -227,35 +226,38 @@ export const tickets: Ticket[] = [
 
 export const notifications: NotificationMessage[] = [
   {
-    id: "notif-1",
+    id: "notification-1",
     userId: "user-1",
     type: "ticket",
-    message: "Trần Thị B đã phản hồi ticket 'Cấu hình VPN cho nhân viên mới'",
+    title: "Ticket cần xử lý",
+    message: "Bạn đã được giao một ticket mới",
     link: "/tickets/ticket-1",
     isRead: false,
-    createdAt: "2025-04-11T08:35:00Z",
-    ticketId: "ticket-1",
+    createdAt: "2023-04-10T08:30:00Z",
+    ticketId: "ticket-1"
   },
   {
-    id: "notif-2",
+    id: "notification-2",
     userId: "user-1",
     type: "ticket",
-    message: "Phạm Thị D đã phê duyệt ticket 'Đề xuất training về React Hooks'",
-    link: "/tickets/ticket-3",
+    title: "Cập nhật ticket",
+    message: "Ticket #2148 đã được cập nhật trạng thái",
+    link: "/tickets/ticket-2",
     isRead: true,
-    createdAt: "2025-04-09T15:10:00Z",
-    ticketId: "ticket-3",
+    createdAt: "2023-04-09T14:15:00Z",
+    ticketId: "ticket-2"
   },
   {
-    id: "notif-3",
-    userId: "user-2",
+    id: "notification-3",
+    userId: "user-1",
     type: "ticket",
-    message: "Bạn được giao xử lý ticket 'Cấu hình VPN cho nhân viên mới'",
-    link: "/tickets/ticket-1",
+    title: "Bình luận mới",
+    message: "Có bình luận mới trên ticket của bạn",
+    link: "/tickets/ticket-3",
     isRead: false,
-    createdAt: "2025-04-11T08:10:00Z",
-    ticketId: "ticket-1",
-  },
+    createdAt: "2023-04-08T11:45:00Z",
+    ticketId: "ticket-3"
+  }
 ];
 
 export const getCategoryLabel = (category: string): string => {

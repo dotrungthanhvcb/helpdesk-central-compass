@@ -243,7 +243,7 @@ const TicketDetail = () => {
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => handleStatusChange("in_progress")}
+                  onClick={() => handleStatusChange("in progress")}
                   disabled={!isCurrentUserAssigned && isAssigned}
                 >
                   <ArrowUpIcon className="mr-2 h-4 w-4" />
@@ -251,7 +251,7 @@ const TicketDetail = () => {
                 </Button>
               )}
               
-              {ticket.status === "in_progress" && canApprove && (
+              {ticket.status === "in progress" && canApprove && (
                 <Button
                   variant="outline"
                   className="w-full justify-start text-green-600"
@@ -262,7 +262,7 @@ const TicketDetail = () => {
                 </Button>
               )}
               
-              {(ticket.status === "pending" || ticket.status === "in_progress") && canReject && (
+              {(ticket.status === "pending" || ticket.status === "in progress") && canReject && (
                 <Button
                   variant="outline"
                   className="w-full justify-start text-red-600"

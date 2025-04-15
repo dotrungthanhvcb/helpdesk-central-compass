@@ -89,8 +89,8 @@ const TimesheetsPage = () => {
 
   const getLeaveBadge = (type: LeaveType) => {
     switch (type) {
-      case "paid":
-        return <Badge className="bg-blue-500">Nghỉ phép có lương</Badge>;
+      case "annual":
+        return <Badge className="bg-blue-500">Nghỉ phép năm</Badge>;
       case "sick":
         return <Badge className="bg-red-500">Nghỉ ốm</Badge>;
       case "unpaid":

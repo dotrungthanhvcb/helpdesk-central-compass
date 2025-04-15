@@ -2,8 +2,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User, Ticket, NotificationMessage, OvertimeRequest, OutsourceReview, EnvironmentSetup, WorkLogEntry, LeaveRequest, TimesheetSummary } from "@/types";
 import { Contract, Document, Squad, Project, Assignment } from "@/types/contracts";
-import { currentUser, users as mockUsers, tickets as mockTickets, notifications as mockNotifications } from "@/data/mockData";
+import { notifications as mockNotifications } from "@/data/mockData";
 import { toast } from "@/hooks/use-toast";
+import { authService, ticketService, contractService, assignmentService, hrService, setupService, getAuthToken, removeAuthToken } from "@/api";
 
 interface AppContextType {
   user: User | null;
@@ -17,53 +18,54 @@ interface AppContextType {
   reviews: OutsourceReview[];
   unreadNotificationsCount: number;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  createTicket: (ticket: Omit<Ticket, "id" | "createdAt" | "updatedAt" | "requester">) => void;
-  updateTicket: (id: string, updates: Partial<Ticket>) => void;
-  deleteTicket: (id: string) => void;
-  addComment: (ticketId: string, content: string) => void;
+  createTicket: (ticket: Omit<Ticket, "id" | "createdAt" | "updatedAt" | "requester">) => Promise<void>;
+  updateTicket: (id: string, updates: Partial<Ticket>) => Promise<void>;
+  deleteTicket: (id: string) => Promise<void>;
+  addComment: (ticketId: string, content: string) => Promise<void>;
   markNotificationAsRead: (id: string) => void;
   markAllNotificationsAsRead: () => void;
   createUser: (userData: User) => void;
   updateUser: (id: string, updates: Partial<User>) => void;
   deleteUser: (id: string) => void;
-  createOvertimeRequest: (request: Omit<OvertimeRequest, "id" | "createdAt" | "updatedAt" | "status" | "userId" | "userName">) => void;
-  updateOvertimeRequest: (id: string, updates: Partial<OvertimeRequest>) => void;
-  deleteOvertimeRequest: (id: string) => void;
-  createWorkLog: (workLog: Omit<WorkLogEntry, "id" | "createdAt" | "updatedAt" | "userId">) => void;
-  updateWorkLog: (id: string, updates: Partial<WorkLogEntry>) => void;
-  deleteWorkLog: (id: string) => void;
-  createLeaveRequest: (request: Omit<LeaveRequest, "id" | "createdAt" | "updatedAt" | "status" | "userId" | "userName">) => void;
-  updateLeaveRequest: (id: string, updates: Partial<LeaveRequest>) => void;
-  deleteLeaveRequest: (id: string) => void;
+  createOvertimeRequest: (request: Omit<OvertimeRequest, "id" | "createdAt" | "updatedAt" | "status" | "userId" | "userName">) => Promise<void>;
+  updateOvertimeRequest: (id: string, updates: Partial<OvertimeRequest>) => Promise<void>;
+  deleteOvertimeRequest: (id: string) => Promise<void>;
+  createWorkLog: (workLog: Omit<WorkLogEntry, "id" | "createdAt" | "updatedAt" | "userId">) => Promise<void>;
+  updateWorkLog: (id: string, updates: Partial<WorkLogEntry>) => Promise<void>;
+  deleteWorkLog: (id: string) => Promise<void>;
+  createLeaveRequest: (request: Omit<LeaveRequest, "id" | "createdAt" | "updatedAt" | "status" | "userId" | "userName">) => Promise<void>;
+  updateLeaveRequest: (id: string, updates: Partial<LeaveRequest>) => Promise<void>;
+  deleteLeaveRequest: (id: string) => Promise<void>;
   getTimesheetSummary: (userId: string, period: string, startDate: string, endDate: string) => TimesheetSummary | null;
-  createReview: (review: Omit<OutsourceReview, "id" | "createdAt" | "updatedAt" | "reviewerId" | "reviewerName">) => void;
-  updateReview: (id: string, updates: Partial<OutsourceReview>) => void;
-  deleteReview: (id: string) => void;
+  createReview: (review: Omit<OutsourceReview, "id" | "createdAt" | "updatedAt" | "reviewerId" | "reviewerName">) => Promise<void>;
+  updateReview: (id: string, updates: Partial<OutsourceReview>) => Promise<void>;
+  deleteReview: (id: string) => Promise<void>;
   environmentSetups: EnvironmentSetup[];
   createEnvironmentSetup: (setup: Omit<EnvironmentSetup, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
-  updateEnvironmentSetup: (setup: EnvironmentSetup) => void;
-  deleteEnvironmentSetup: (id: string) => void;
+  updateEnvironmentSetup: (setup: EnvironmentSetup) => Promise<void>;
+  deleteEnvironmentSetup: (id: string) => Promise<void>;
   contracts: Contract[];
   documents: Document[];
   squads: Squad[];
   projects: Project[];
   assignments: Assignment[];
   createContract: (contract: Omit<Contract, "id" | "createdAt" | "updatedAt" | "documents">) => Promise<string>;
-  updateContract: (id: string, updates: Partial<Contract>) => void;
-  deleteContract: (id: string) => void;
+  updateContract: (id: string, updates: Partial<Contract>) => Promise<void>;
+  deleteContract: (id: string) => Promise<void>;
   uploadDocument: (document: Omit<Document, "id" | "uploadedAt" | "uploadedBy" | "uploadedByName">, file: File) => Promise<string>;
-  deleteDocument: (id: string) => void;
-  createSquad: (squad: Omit<Squad, "id" | "createdAt">) => string;
-  updateSquad: (id: string, updates: Partial<Squad>) => void;
-  deleteSquad: (id: string) => void;
-  createProject: (project: Omit<Project, "id" | "createdAt">) => string;
-  updateProject: (id: string, updates: Partial<Project>) => void;
-  deleteProject: (id: string) => void;
-  createAssignment: (assignment: Omit<Assignment, "id" | "createdAt" | "updatedAt">) => string;
-  updateAssignment: (id: string, updates: Partial<Assignment>) => void;
-  deleteAssignment: (id: string) => void;
+  deleteDocument: (id: string) => Promise<void>;
+  createSquad: (squad: Omit<Squad, "id" | "createdAt">) => Promise<string>;
+  updateSquad: (id: string, updates: Partial<Squad>) => Promise<void>;
+  deleteSquad: (id: string) => Promise<void>;
+  createProject: (project: Omit<Project, "id" | "createdAt">) => Promise<string>;
+  updateProject: (id: string, updates: Partial<Project>) => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
+  createAssignment: (assignment: Omit<Assignment, "id" | "createdAt" | "updatedAt">) => Promise<string>;
+  updateAssignment: (id: string, updates: Partial<Assignment>) => Promise<void>;
+  deleteAssignment: (id: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -85,42 +87,95 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [projects, setProjects] = useState<Project[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Initial load - check if token exists and fetch user data
   useEffect(() => {
-    const autoLogin = async () => {
-      setUser(currentUser);
-      setUsers(mockUsers);
-      setTickets(mockTickets);
-      setNotifications(mockNotifications.filter(n => n.userId === currentUser.id));
-      setOvertimeRequests([]);
-      setWorkLogs([]);
-      setLeaveRequests([]);
-      setTimesheetSummaries([]);
-      setReviews([]);
-      setEnvironmentSetups([]);
-      setIsAuthenticated(true);
+    const initializeAuth = async () => {
+      setIsLoading(true);
+      try {
+        const token = getAuthToken();
+        if (token) {
+          const userData = await authService.getCurrentUser();
+          if (userData) {
+            setUser(userData);
+            setIsAuthenticated(true);
+            await loadInitialData();
+          }
+        }
+      } catch (error) {
+        console.error("Authentication failed:", error);
+        removeAuthToken();
+      } finally {
+        setIsLoading(false);
+      }
     };
-    autoLogin();
+
+    initializeAuth();
   }, []);
+
+  // Load initial data after successful authentication
+  const loadInitialData = async () => {
+    try {
+      // Load tickets
+      const ticketsData = await ticketService.getTickets();
+      setTickets(ticketsData);
+
+      // Load contracts and related data
+      const [contractsData, squadsData, projectsData, assignmentsData] = await Promise.all([
+        contractService.getContracts(),
+        assignmentService.getSquads(),
+        assignmentService.getProjects(),
+        assignmentService.getAssignments(),
+      ]);
+
+      setContracts(contractsData);
+      setSquads(squadsData);
+      setProjects(projectsData);
+      setAssignments(assignmentsData);
+
+      // Load HR related data
+      const [overtimeData, leaveData, reviewsData] = await Promise.all([
+        hrService.getOvertimeRequests(),
+        hrService.getLeaveRequests(),
+        hrService.getReviews(),
+      ]);
+
+      setOvertimeRequests(overtimeData);
+      setLeaveRequests(leaveData);
+      setReviews(reviewsData);
+
+      // Load environment setups
+      const setupsData = await setupService.getEnvironmentSetups();
+      setEnvironmentSetups(setupsData);
+
+      // For now, use mock notifications until we have a real notifications API
+      setNotifications(mockNotifications.filter(n => n.userId === user?.id));
+    } catch (error) {
+      console.error("Error loading initial data:", error);
+      toast({
+        title: "Data Loading Error",
+        description: "Failed to load some application data.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const unreadNotificationsCount = notifications.filter(n => !n.isRead).length;
 
   const login = async (email: string, password: string): Promise<boolean> => {
+    setIsLoading(true);
     try {
-      if (email && password) {
-        setUser(currentUser);
-        setUsers(mockUsers);
-        setTickets(mockTickets);
-        setNotifications(mockNotifications.filter(n => n.userId === currentUser.id));
-        setEnvironmentSetups([]);
-        setIsAuthenticated(true);
-        toast({
-          title: "Đăng nhập thành công",
-          description: `Chào mừng, ${currentUser.name}!`,
-        });
-        return true;
-      }
-      return false;
+      const userData = await authService.login(email, password);
+      setUser(userData);
+      setIsAuthenticated(true);
+      await loadInitialData();
+      
+      toast({
+        title: "Đăng nhập thành công",
+        description: `Chào mừng, ${userData.name}!`,
+      });
+      return true;
     } catch (error) {
       toast({
         title: "Đăng nhập thất bại",
@@ -128,90 +183,95 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         variant: "destructive",
       });
       return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    setIsAuthenticated(false);
-    toast({
-      title: "Đăng xuất thành công",
-      description: "Hẹn gặp lại!",
-    });
+  const logout = async () => {
+    setIsLoading(true);
+    try {
+      await authService.logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setUser(null);
+      setIsAuthenticated(false);
+      removeAuthToken();
+      setIsLoading(false);
+      
+      toast({
+        title: "Đăng xuất thành công",
+        description: "Hẹn gặp lại!",
+      });
+    }
   };
 
-  const createTicket = (ticketData: Omit<Ticket, "id" | "createdAt" | "updatedAt" | "requester">) => {
-    if (!user) return;
-    
-    const newTicket: Ticket = {
-      ...ticketData,
-      id: `ticket-${Date.now()}`,
-      requester: user,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    setTickets([newTicket, ...tickets]);
-    
-    toast({
-      title: "Ticket đã được tạo",
-      description: `Ticket ${newTicket.title} đã được tạo thành công`,
-    });
+  const createTicket = async (ticketData: Omit<Ticket, "id" | "createdAt" | "updatedAt" | "requester">) => {
+    try {
+      const newTicket = await ticketService.createTicket(ticketData);
+      setTickets(prev => [newTicket, ...prev]);
+      
+      toast({
+        title: "Ticket đã được tạo",
+        description: `Ticket ${newTicket.title} đã được tạo thành công`,
+      });
+    } catch (error) {
+      console.error("Create ticket error:", error);
+    }
   };
 
-  const updateTicket = (id: string, updates: Partial<Ticket>) => {
-    setTickets(
-      tickets.map(ticket => 
-        ticket.id === id 
-          ? { ...ticket, ...updates, updatedAt: new Date().toISOString() } 
-          : ticket
-      )
-    );
-    
-    toast({
-      title: "Ticket đã cập nhật",
-      description: `Ticket đã được cập nhật thành công`,
-    });
+  const updateTicket = async (id: string, updates: Partial<Ticket>) => {
+    try {
+      const updatedTicket = await ticketService.updateTicket(id, updates);
+      setTickets(prev => prev.map(ticket => 
+        ticket.id === id ? updatedTicket : ticket
+      ));
+      
+      toast({
+        title: "Ticket đã cập nhật",
+        description: `Ticket đã được cập nhật thành công`,
+      });
+    } catch (error) {
+      console.error("Update ticket error:", error);
+    }
   };
 
-  const deleteTicket = (id: string) => {
-    setTickets(tickets.filter(ticket => ticket.id !== id));
-    
-    toast({
-      title: "Ticket đã xóa",
-      description: `Ticket đã được xóa thành công`,
-    });
+  const deleteTicket = async (id: string) => {
+    try {
+      await ticketService.deleteTicket(id);
+      setTickets(prev => prev.filter(ticket => ticket.id !== id));
+      
+      toast({
+        title: "Ticket đã xóa",
+        description: `Ticket đã được xóa thành công`,
+      });
+    } catch (error) {
+      console.error("Delete ticket error:", error);
+    }
   };
 
-  const addComment = (ticketId: string, content: string) => {
-    if (!user) return;
-    
-    const newComment = {
-      id: `comment-${Date.now()}`,
-      ticketId,
-      userId: user.id,
-      userName: user.name,
-      userAvatar: user.avatar,
-      content,
-      createdAt: new Date().toISOString(),
-    };
-    
-    setTickets(
-      tickets.map(ticket => 
+  const addComment = async (ticketId: string, content: string) => {
+    try {
+      const newComment = await ticketService.addComment(ticketId, content);
+      
+      setTickets(prev => prev.map(ticket => 
         ticket.id === ticketId 
           ? {
               ...ticket,
               comments: [...(ticket.comments || []), newComment],
-              updatedAt: new Date().toISOString(),
             }
           : ticket
-      )
-    );
+      ));
+    } catch (error) {
+      console.error("Add comment error:", error);
+    }
   };
 
+  // Notification methods - will use local state until we have a notifications API
   const markNotificationAsRead = (id: string) => {
-    setNotifications(
-      notifications.map(notification => 
+    setNotifications(prev =>
+      prev.map(notification => 
         notification.id === id 
           ? { ...notification, isRead: true } 
           : notification
@@ -220,12 +280,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const markAllNotificationsAsRead = () => {
-    setNotifications(
-      notifications.map(notification => ({ ...notification, isRead: true }))
+    setNotifications(prev =>
+      prev.map(notification => ({ ...notification, isRead: true }))
     );
   };
 
+  // User management - placeholder methods for when we have a users API
   const createUser = (userData: User) => {
+    // Placeholder until we have a users API
     const newUser: User = {
       ...userData,
       id: `user-${Date.now()}`,
@@ -242,6 +304,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const updateUser = (id: string, updates: Partial<User>) => {
+    // Placeholder until we have a users API
     setUsers(
       users.map(u => u.id === id ? { ...u, ...updates } : u)
     );
@@ -257,6 +320,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const deleteUser = (id: string) => {
+    // Placeholder until we have a users API
     if (user && user.id === id) {
       toast({
         title: "Không thể xóa người dùng",
@@ -274,52 +338,52 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   };
 
-  const createOvertimeRequest = (requestData: Omit<OvertimeRequest, "id" | "createdAt" | "updatedAt" | "status" | "userId" | "userName">) => {
-    if (!user) return;
-    
-    const newRequest: OvertimeRequest = {
-      ...requestData,
-      id: `ot-${Date.now()}`,
-      userId: user.id,
-      userName: user.name,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    setOvertimeRequests([newRequest, ...overtimeRequests]);
-    
-    toast({
-      title: "Yêu cầu OT đã được tạo",
-      description: `Yêu cầu làm thêm giờ đã được gửi và đang chờ phê duyệt`,
-    });
+  const createOvertimeRequest = async (requestData: Omit<OvertimeRequest, "id" | "createdAt" | "updatedAt" | "status" | "userId" | "userName">) => {
+    try {
+      const newRequest = await hrService.createOvertimeRequest(requestData);
+      setOvertimeRequests(prev => [newRequest, ...prev]);
+      
+      toast({
+        title: "Yêu cầu OT đã được tạo",
+        description: `Yêu cầu làm thêm giờ đã được gửi và đang chờ phê duyệt`,
+      });
+    } catch (error) {
+      console.error("Create overtime request error:", error);
+    }
   };
 
-  const updateOvertimeRequest = (id: string, updates: Partial<OvertimeRequest>) => {
-    setOvertimeRequests(
-      overtimeRequests.map(request => 
-        request.id === id 
-          ? { ...request, ...updates, updatedAt: new Date().toISOString() } 
-          : request
-      )
-    );
-    
-    toast({
-      title: "Yêu cầu OT đã cập nhật",
-      description: `Yêu cầu làm thêm giờ đã được cập nhật thành công`,
-    });
+  const updateOvertimeRequest = async (id: string, updates: Partial<OvertimeRequest>) => {
+    try {
+      const updatedRequest = await hrService.updateOvertimeRequest(id, updates);
+      setOvertimeRequests(prev => prev.map(request => 
+        request.id === id ? updatedRequest : request
+      ));
+      
+      toast({
+        title: "Yêu cầu OT đã cập nhật",
+        description: `Yêu cầu làm thêm giờ đã được cập nhật thành công`,
+      });
+    } catch (error) {
+      console.error("Update overtime request error:", error);
+    }
   };
 
-  const deleteOvertimeRequest = (id: string) => {
-    setOvertimeRequests(overtimeRequests.filter(request => request.id !== id));
-    
-    toast({
-      title: "Yêu cầu OT đã xóa",
-      description: `Yêu cầu làm thêm giờ đã được xóa thành công`,
-    });
+  const deleteOvertimeRequest = async (id: string) => {
+    try {
+      await hrService.deleteOvertimeRequest(id);
+      setOvertimeRequests(prev => prev.filter(request => request.id !== id));
+      
+      toast({
+        title: "Yêu cầu OT đã xóa",
+        description: `Yêu cầu làm thêm giờ đã được xóa thành công`,
+      });
+    } catch (error) {
+      console.error("Delete overtime request error:", error);
+    }
   };
 
-  const createWorkLog = (workLogData: Omit<WorkLogEntry, "id" | "createdAt" | "updatedAt" | "userId">) => {
+  const createWorkLog = async (workLogData: Omit<WorkLogEntry, "id" | "createdAt" | "updatedAt" | "userId">) => {
+    // TODO: Replace with real API once available
     if (!user) return;
     
     const newWorkLog: WorkLogEntry = {
@@ -338,7 +402,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   };
 
-  const updateWorkLog = (id: string, updates: Partial<WorkLogEntry>) => {
+  const updateWorkLog = async (id: string, updates: Partial<WorkLogEntry>) => {
+    // TODO: Replace with real API once available
     setWorkLogs(
       workLogs.map(log => 
         log.id === id 
@@ -353,7 +418,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   };
 
-  const deleteWorkLog = (id: string) => {
+  const deleteWorkLog = async (id: string) => {
+    // TODO: Replace with real API once available
     setWorkLogs(workLogs.filter(log => log.id !== id));
     
     toast({
@@ -362,51 +428,51 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     });
   };
 
-  const createLeaveRequest = (requestData: Omit<LeaveRequest, "id" | "createdAt" | "updatedAt" | "status" | "userId" | "userName">) => {
-    if (!user) return;
-    
-    const newRequest: LeaveRequest = {
-      ...requestData,
-      id: `leave-${Date.now()}`,
-      userId: user.id,
-      userName: user.name,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    setLeaveRequests([newRequest, ...leaveRequests]);
-    
-    toast({
-      title: "Yêu cầu nghỉ phép đã được tạo",
-      description: `Yêu cầu nghỉ phép đã được gửi và đang chờ phê duyệt`,
-    });
+  const createLeaveRequest = async (requestData: Omit<LeaveRequest, "id" | "createdAt" | "updatedAt" | "status" | "userId" | "userName">) => {
+    try {
+      const newRequest = await hrService.createLeaveRequest(requestData);
+      setLeaveRequests(prev => [newRequest, ...prev]);
+      
+      toast({
+        title: "Yêu cầu nghỉ phép đã được tạo",
+        description: `Yêu cầu nghỉ phép đã được gửi và đang chờ phê duyệt`,
+      });
+    } catch (error) {
+      console.error("Create leave request error:", error);
+    }
   };
 
-  const updateLeaveRequest = (id: string, updates: Partial<LeaveRequest>) => {
-    setLeaveRequests(
-      leaveRequests.map(request => 
-        request.id === id 
-          ? { ...request, ...updates, updatedAt: new Date().toISOString() } 
-          : request
-      )
-    );
-    
-    toast({
-      title: "Yêu cầu nghỉ phép đã cập nhật",
-      description: `Yêu cầu nghỉ phép đã được cập nhật thành công`,
-    });
+  const updateLeaveRequest = async (id: string, updates: Partial<LeaveRequest>) => {
+    try {
+      const updatedRequest = await hrService.updateLeaveRequest(id, updates);
+      setLeaveRequests(prev => prev.map(request => 
+        request.id === id ? updatedRequest : request
+      ));
+      
+      toast({
+        title: "Yêu cầu nghỉ phép đã cập nhật",
+        description: `Yêu cầu nghỉ phép đã được cập nhật thành công`,
+      });
+    } catch (error) {
+      console.error("Update leave request error:", error);
+    }
   };
 
-  const deleteLeaveRequest = (id: string) => {
-    setLeaveRequests(leaveRequests.filter(request => request.id !== id));
-    
-    toast({
-      title: "Yêu cầu nghỉ phép đã xóa",
-      description: `Yêu cầu nghỉ phép đã được xóa thành công`,
-    });
+  const deleteLeaveRequest = async (id: string) => {
+    try {
+      await hrService.deleteLeaveRequest(id);
+      setLeaveRequests(prev => prev.filter(request => request.id !== id));
+      
+      toast({
+        title: "Yêu cầu nghỉ phép đã xóa",
+        description: `Yêu cầu nghỉ phép đã được xóa thành công`,
+      });
+    } catch (error) {
+      console.error("Delete leave request error:", error);
+    }
   };
 
+  // Timesheet summary - placeholder until we have an API for this
   const getTimesheetSummary = (userId: string, period: string, startDate: string, endDate: string): TimesheetSummary | null => {
     const existingSummary = timesheetSummaries.find(
       s => s.userId === userId && s.period === period && s.startDate === startDate && s.endDate === endDate
@@ -416,6 +482,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       return existingSummary;
     }
     
+    // Placeholder calculation logic
     const userWorkLogs = workLogs.filter(
       log => log.userId === userId && log.date >= startDate && log.date <= endDate
     );
@@ -460,355 +527,386 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return newSummary;
   };
 
-  const createReview = (reviewData: Omit<OutsourceReview, "id" | "createdAt" | "updatedAt" | "reviewerId" | "reviewerName">) => {
-    if (!user) return;
-    
-    const newReview: OutsourceReview = {
-      ...reviewData,
-      id: `review-${Date.now()}`,
-      reviewerId: user.id,
-      reviewerName: user.name,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    setReviews([newReview, ...reviews]);
-    
-    toast({
-      title: "Đánh giá đã được tạo",
-      description: `Đánh giá cho ${newReview.revieweeName} đã được tạo thành công`,
-    });
+  const createReview = async (reviewData: Omit<OutsourceReview, "id" | "createdAt" | "updatedAt" | "reviewerId" | "reviewerName">) => {
+    try {
+      const newReview = await hrService.createReview(reviewData);
+      setReviews(prev => [newReview, ...prev]);
+      
+      toast({
+        title: "Đánh giá đã được tạo",
+        description: `Đánh giá cho ${newReview.revieweeName} đã được tạo thành công`,
+      });
+    } catch (error) {
+      console.error("Create review error:", error);
+    }
   };
 
-  const updateReview = (id: string, updates: Partial<OutsourceReview>) => {
-    setReviews(
-      reviews.map(review => 
-        review.id === id 
-          ? { ...review, ...updates, updatedAt: new Date().toISOString() } 
-          : review
-      )
-    );
-    
-    toast({
-      title: "Đánh giá đã cập nhật",
-      description: `Đánh giá đã được cập nhật thành công`,
-    });
+  const updateReview = async (id: string, updates: Partial<OutsourceReview>) => {
+    try {
+      const updatedReview = await hrService.updateReview(id, updates);
+      setReviews(prev => prev.map(review => 
+        review.id === id ? updatedReview : review
+      ));
+      
+      toast({
+        title: "Đánh giá đã cập nhật",
+        description: `Đánh giá đã được cập nhật thành công`,
+      });
+    } catch (error) {
+      console.error("Update review error:", error);
+    }
   };
 
-  const deleteReview = (id: string) => {
-    setReviews(reviews.filter(review => review.id !== id));
-    
-    toast({
-      title: "Đánh giá đã xóa",
-      description: `Đánh giá đã được xóa thành công`,
-    });
+  const deleteReview = async (id: string) => {
+    try {
+      await hrService.deleteReview(id);
+      setReviews(prev => prev.filter(review => review.id !== id));
+      
+      toast({
+        title: "Đánh giá đã xóa",
+        description: `Đánh giá đã được xóa thành công`,
+      });
+    } catch (error) {
+      console.error("Delete review error:", error);
+    }
+  };
+
+  const createEnvironmentSetup = async (setupData: Omit<EnvironmentSetup, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      const newSetup = await setupService.createEnvironmentSetup(setupData);
+      setEnvironmentSetups(prev => [...prev, newSetup]);
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Create environment setup error:", error);
+      return Promise.reject(error);
+    }
+  };
+
+  const updateEnvironmentSetup = async (updatedSetup: EnvironmentSetup) => {
+    try {
+      await setupService.updateEnvironmentSetup(updatedSetup.id, updatedSetup);
+      setEnvironmentSetups(prev => 
+        prev.map(setup => (setup.id === updatedSetup.id ? updatedSetup : setup))
+      );
+    } catch (error) {
+      console.error("Update environment setup error:", error);
+    }
+  };
+
+  const deleteEnvironmentSetup = async (id: string) => {
+    try {
+      await setupService.deleteEnvironmentSetup(id);
+      setEnvironmentSetups(prev => prev.filter(setup => setup.id !== id));
+      
+      toast({
+        title: "Thiết lập đã xóa",
+        description: `Thiết lập môi trường đã được xóa thành công`,
+      });
+    } catch (error) {
+      console.error("Delete environment setup error:", error);
+    }
   };
 
   const createContract = async (contractData: Omit<Contract, "id" | "createdAt" | "updatedAt" | "documents">) => {
-    if (!user) return Promise.reject("User not authenticated");
-    
-    const newContract: Contract = {
-      ...contractData,
-      id: `contract-${Date.now()}`,
-      documents: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    setContracts([newContract, ...contracts]);
-    
-    toast({
-      title: "Hợp đồng đã được tạo",
-      description: `Hợp đồng cho ${newContract.staffName} đã được tạo thành công`,
-    });
-    
-    return Promise.resolve(newContract.id);
+    try {
+      const newContract = await contractService.createContract(contractData);
+      setContracts(prev => [newContract, ...prev]);
+      
+      toast({
+        title: "Hợp đồng đã được tạo",
+        description: `Hợp đồng cho ${newContract.staffName} đã được tạo thành công`,
+      });
+      
+      return newContract.id;
+    } catch (error) {
+      console.error("Create contract error:", error);
+      return "";
+    }
   };
 
-  const updateContract = (id: string, updates: Partial<Contract>) => {
-    setContracts(
-      contracts.map(contract => 
-        contract.id === id 
-          ? { ...contract, ...updates, updatedAt: new Date().toISOString() } 
-          : contract
-      )
-    );
-    
-    toast({
-      title: "Hợp đồng đã cập nhật",
-      description: `Hợp đồng đã được cập nhật thành công`,
-    });
+  const updateContract = async (id: string, updates: Partial<Contract>) => {
+    try {
+      const updatedContract = await contractService.updateContract(id, updates);
+      setContracts(prev => prev.map(contract => 
+        contract.id === id ? updatedContract : contract
+      ));
+      
+      toast({
+        title: "Hợp đồng đã cập nhật",
+        description: `Hợp đồng đã được cập nhật thành công`,
+      });
+    } catch (error) {
+      console.error("Update contract error:", error);
+    }
   };
 
-  const deleteContract = (id: string) => {
-    setContracts(contracts.filter(contract => contract.id !== id));
-    
-    toast({
-      title: "Hợp đồng đã xóa",
-      description: `Hợp đồng đã được xóa thành công`,
-    });
+  const deleteContract = async (id: string) => {
+    try {
+      await contractService.deleteContract(id);
+      setContracts(prev => prev.filter(contract => contract.id !== id));
+      
+      toast({
+        title: "Hợp đồng đã xóa",
+        description: `Hợp đồng đã được xóa thành công`,
+      });
+    } catch (error) {
+      console.error("Delete contract error:", error);
+    }
   };
 
   const uploadDocument = async (
     documentData: Omit<Document, "id" | "uploadedAt" | "uploadedBy" | "uploadedByName">, 
     file: File
   ) => {
-    if (!user) return Promise.reject("User not authenticated");
-    
-    const newDocument: Document = {
-      ...documentData,
-      id: `doc-${Date.now()}`,
-      uploadedAt: new Date().toISOString(),
-      uploadedBy: user.id,
-      uploadedByName: user.name,
-      size: file.size,
-    };
-    
-    setDocuments([newDocument, ...documents]);
-    
-    setContracts(
-      contracts.map(contract => 
-        contract.id === documentData.contractId
-          ? { 
-              ...contract, 
-              documents: [...contract.documents, newDocument],
-              updatedAt: new Date().toISOString() 
-            } 
-          : contract
-      )
-    );
-    
-    toast({
-      title: "Tài liệu đã tải lên",
-      description: `Tài liệu ${newDocument.name} đã được tải lên thành công`,
-    });
-    
-    return Promise.resolve(newDocument.id);
-  };
-
-  const deleteDocument = (id: string) => {
-    const document = documents.find(doc => doc.id === id);
-    
-    if (!document) {
+    try {
+      const newDocument = await contractService.uploadDocument(
+        documentData.contractId,
+        documentData,
+        file
+      );
+      
+      setDocuments(prev => [newDocument, ...prev]);
+      
+      // Update the contract with the new document
+      setContracts(prev =>
+        prev.map(contract => 
+          contract.id === documentData.contractId
+            ? { 
+                ...contract, 
+                documents: [...contract.documents, newDocument]
+              } 
+            : contract
+        )
+      );
+      
       toast({
-        title: "Lỗi",
-        description: "Không tìm thấy tài liệu",
-        variant: "destructive",
+        title: "Tài liệu đã tải lên",
+        description: `Tài liệu ${newDocument.name} đã được tải lên thành công`,
       });
-      return;
+      
+      return newDocument.id;
+    } catch (error) {
+      console.error("Upload document error:", error);
+      return "";
     }
-    
-    setDocuments(documents.filter(doc => doc.id !== id));
-    
-    setContracts(
-      contracts.map(contract => 
-        contract.id === document.contractId
-          ? { 
-              ...contract, 
-              documents: contract.documents.filter(doc => doc.id !== id),
-              updatedAt: new Date().toISOString() 
-            } 
-          : contract
-      )
-    );
-    
-    toast({
-      title: "Tài liệu đã xóa",
-      description: `Tài liệu đã được xóa thành công`,
-    });
   };
 
-  const createSquad = (squadData: Omit<Squad, "id" | "createdAt">) => {
-    if (!user) return "";
-    
-    const newSquad: Squad = {
-      ...squadData,
-      id: `squad-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-    };
-    
-    setSquads([newSquad, ...squads]);
-    
-    toast({
-      title: "Nhóm đã được tạo",
-      description: `Nhóm ${newSquad.name} đã được tạo thành công`,
-    });
-    
-    return newSquad.id;
+  const deleteDocument = async (id: string) => {
+    try {
+      const document = documents.find(doc => doc.id === id);
+      
+      if (!document) {
+        toast({
+          title: "Lỗi",
+          description: "Không tìm thấy tài liệu",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // In a real app, we'd call an API endpoint to delete the document
+      setDocuments(prev => prev.filter(doc => doc.id !== id));
+      
+      // Update the contract to remove the document
+      setContracts(prev =>
+        prev.map(contract => 
+          contract.id === document.contractId
+            ? { 
+                ...contract, 
+                documents: contract.documents.filter(doc => doc.id !== id)
+              } 
+            : contract
+        )
+      );
+      
+      toast({
+        title: "Tài liệu đã xóa",
+        description: `Tài liệu đã được xóa thành công`,
+      });
+    } catch (error) {
+      console.error("Delete document error:", error);
+    }
   };
 
-  const updateSquad = (id: string, updates: Partial<Squad>) => {
-    setSquads(
-      squads.map(squad => 
-        squad.id === id 
-          ? { ...squad, ...updates } 
-          : squad
-      )
-    );
-    
-    if (updates.name) {
-      setAssignments(
-        assignments.map(assignment => 
+  const createSquad = async (squadData: Omit<Squad, "id" | "createdAt">) => {
+    try {
+      const newSquad = await assignmentService.createSquad(squadData);
+      setSquads(prev => [newSquad, ...prev]);
+      
+      toast({
+        title: "Nhóm đã được tạo",
+        description: `Nhóm ${newSquad.name} đã được tạo thành công`,
+      });
+      
+      return newSquad.id;
+    } catch (error) {
+      console.error("Create squad error:", error);
+      return "";
+    }
+  };
+
+  const updateSquad = async (id: string, updates: Partial<Squad>) => {
+    try {
+      const updatedSquad = await assignmentService.updateSquad(id, updates);
+      setSquads(prev => prev.map(squad => 
+        squad.id === id ? updatedSquad : squad
+      ));
+      
+      // If the name was updated, update assignments that reference this squad
+      if (updates.name) {
+        setAssignments(prev =>
+          prev.map(assignment => 
+            assignment.squadId === id 
+              ? { ...assignment, squadName: updates.name } 
+              : assignment
+          )
+        );
+      }
+      
+      toast({
+        title: "Nhóm đã cập nhật",
+        description: `Thông tin nhóm đã được cập nhật thành công`,
+      });
+    } catch (error) {
+      console.error("Update squad error:", error);
+    }
+  };
+
+  const deleteSquad = async (id: string) => {
+    try {
+      await assignmentService.deleteSquad(id);
+      setSquads(prev => prev.filter(squad => squad.id !== id));
+      
+      // Update assignments that reference this squad
+      setAssignments(prev =>
+        prev.map(assignment => 
           assignment.squadId === id 
-            ? { ...assignment, squadName: updates.name } 
+            ? { ...assignment, squadId: undefined, squadName: undefined } 
             : assignment
         )
       );
+      
+      toast({
+        title: "Nhóm đã xóa",
+        description: `Nhóm đã được xóa thành công`,
+      });
+    } catch (error) {
+      console.error("Delete squad error:", error);
     }
-    
-    toast({
-      title: "Nhóm đã cập nhật",
-      description: `Thông tin nhóm đã được cập nhật thành công`,
-    });
   };
 
-  const deleteSquad = (id: string) => {
-    setSquads(squads.filter(squad => squad.id !== id));
-    
-    setAssignments(
-      assignments.map(assignment => 
-        assignment.squadId === id 
-          ? { ...assignment, squadId: undefined, squadName: undefined } 
-          : assignment
-      )
-    );
-    
-    toast({
-      title: "Nhóm đã xóa",
-      description: `Nhóm đã được xóa thành công`,
-    });
+  const createProject = async (projectData: Omit<Project, "id" | "createdAt">) => {
+    try {
+      const newProject = await assignmentService.createProject(projectData);
+      setProjects(prev => [newProject, ...prev]);
+      
+      toast({
+        title: "Dự án đã được tạo",
+        description: `Dự án ${newProject.name} đã được tạo thành công`,
+      });
+      
+      return newProject.id;
+    } catch (error) {
+      console.error("Create project error:", error);
+      return "";
+    }
   };
 
-  const createProject = (projectData: Omit<Project, "id" | "createdAt">) => {
-    if (!user) return "";
-    
-    const newProject: Project = {
-      ...projectData,
-      id: `project-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-    };
-    
-    setProjects([newProject, ...projects]);
-    
-    toast({
-      title: "Dự án đã được tạo",
-      description: `Dự án ${newProject.name} đã được tạo thành công`,
-    });
-    
-    return newProject.id;
+  const updateProject = async (id: string, updates: Partial<Project>) => {
+    try {
+      const updatedProject = await assignmentService.updateProject(id, updates);
+      setProjects(prev => prev.map(project => 
+        project.id === id ? updatedProject : project
+      ));
+      
+      // If the name was updated, update assignments that reference this project
+      if (updates.name) {
+        setAssignments(prev =>
+          prev.map(assignment => 
+            assignment.projectId === id 
+              ? { ...assignment, projectName: updates.name } 
+              : assignment
+          )
+        );
+      }
+      
+      toast({
+        title: "Dự án đã cập nhật",
+        description: `Thông tin dự án đã được cập nhật thành công`,
+      });
+    } catch (error) {
+      console.error("Update project error:", error);
+    }
   };
 
-  const updateProject = (id: string, updates: Partial<Project>) => {
-    setProjects(
-      projects.map(project => 
-        project.id === id 
-          ? { ...project, ...updates } 
-          : project
-      )
-    );
-    
-    if (updates.name) {
-      setAssignments(
-        assignments.map(assignment => 
+  const deleteProject = async (id: string) => {
+    try {
+      await assignmentService.deleteProject(id);
+      setProjects(prev => prev.filter(project => project.id !== id));
+      
+      // Update assignments that reference this project
+      setAssignments(prev =>
+        prev.map(assignment => 
           assignment.projectId === id 
-            ? { ...assignment, projectName: updates.name } 
+            ? { ...assignment, projectId: undefined, projectName: undefined } 
             : assignment
         )
       );
+      
+      toast({
+        title: "Dự án đã xóa",
+        description: `Dự án đã được xóa thành công`,
+      });
+    } catch (error) {
+      console.error("Delete project error:", error);
     }
-    
-    toast({
-      title: "Dự án đã cập nhật",
-      description: `Thông tin dự án đã được cập nhật thành công`,
-    });
   };
 
-  const deleteProject = (id: string) => {
-    setProjects(projects.filter(project => project.id !== id));
-    
-    setAssignments(
-      assignments.map(assignment => 
-        assignment.projectId === id 
-          ? { ...assignment, projectId: undefined, projectName: undefined } 
-          : assignment
-      )
-    );
-    
-    toast({
-      title: "Dự án đã xóa",
-      description: `Dự án đã được xóa thành công`,
-    });
+  const createAssignment = async (assignmentData: Omit<Assignment, "id" | "createdAt" | "updatedAt">) => {
+    try {
+      const newAssignment = await assignmentService.createAssignment(assignmentData);
+      setAssignments(prev => [newAssignment, ...prev]);
+      
+      toast({
+        title: "Phân công đã được tạo",
+        description: `Phân công cho ${newAssignment.staffName} đã được tạo thành công`,
+      });
+      
+      return newAssignment.id;
+    } catch (error) {
+      console.error("Create assignment error:", error);
+      return "";
+    }
   };
 
-  const createAssignment = (assignmentData: Omit<Assignment, "id" | "createdAt" | "updatedAt">) => {
-    if (!user) return "";
-    
-    const newAssignment: Assignment = {
-      ...assignmentData,
-      id: `assignment-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    setAssignments([newAssignment, ...assignments]);
-    
-    toast({
-      title: "Phân công đã được tạo",
-      description: `Phân công cho ${newAssignment.staffName} đã được tạo thành công`,
-    });
-    
-    return newAssignment.id;
+  const updateAssignment = async (id: string, updates: Partial<Assignment>) => {
+    try {
+      const updatedAssignment = await assignmentService.updateAssignment(id, updates);
+      setAssignments(prev => prev.map(assignment => 
+        assignment.id === id ? updatedAssignment : assignment
+      ));
+      
+      toast({
+        title: "Phân công đã cập nhật",
+        description: `Thông tin phân công đã được cập nhật thành công`,
+      });
+    } catch (error) {
+      console.error("Update assignment error:", error);
+    }
   };
 
-  const updateAssignment = (id: string, updates: Partial<Assignment>) => {
-    setAssignments(
-      assignments.map(assignment => 
-        assignment.id === id 
-          ? { ...assignment, ...updates, updatedAt: new Date().toISOString() } 
-          : assignment
-      )
-    );
-    
-    toast({
-      title: "Phân công đã cập nhật",
-      description: `Thông tin phân công đã được cập nhật thành công`,
-    });
-  };
-
-  const deleteAssignment = (id: string) => {
-    setAssignments(assignments.filter(assignment => assignment.id !== id));
-    
-    toast({
-      title: "Phân công đã xóa",
-      description: `Phân công đã được xóa thành công`,
-    });
-  };
-
-  const createEnvironmentSetup = async (setupData: Omit<EnvironmentSetup, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const newSetup: EnvironmentSetup = {
-      ...setupData,
-      id: `env-${Date.now()}`,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    setEnvironmentSetups((prev) => [...prev, newSetup]);
-    return Promise.resolve();
-  };
-
-  const updateEnvironmentSetup = (updatedSetup: EnvironmentSetup) => {
-    setEnvironmentSetups((prev) => 
-      prev.map((setup) => (setup.id === updatedSetup.id ? updatedSetup : setup))
-    );
-  };
-
-  const deleteEnvironmentSetup = (id: string) => {
-    setEnvironmentSetups(environmentSetups.filter(setup => setup.id !== id));
-    
-    toast({
-      title: "Thiết lập đã xóa",
-      description: `Thiết lập môi trường đã được xóa thành công`,
-    });
+  const deleteAssignment = async (id: string) => {
+    try {
+      await assignmentService.deleteAssignment(id);
+      setAssignments(prev => prev.filter(assignment => assignment.id !== id));
+      
+      toast({
+        title: "Phân công đã xóa",
+        description: `Phân công đã được xóa thành công`,
+      });
+    } catch (error) {
+      console.error("Delete assignment error:", error);
+    }
   };
 
   const value: AppContextType = {
@@ -823,6 +921,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     reviews,
     unreadNotificationsCount,
     isAuthenticated,
+    isLoading,
     login,
     logout,
     createTicket,
