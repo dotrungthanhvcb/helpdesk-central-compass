@@ -23,7 +23,7 @@ const LeaveRequestForm = ({ onSuccess }: { onSuccess?: () => void }) => {
   const { createLeaveRequest } = useApp();
   const { toast } = useToast();
   
-  const [leaveType, setLeaveType] = useState<LeaveType>('paid');
+  const [leaveType, setLeaveType] = useState<LeaveType>('annual');
   const [startDate, setStartDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [endDate, setEndDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [reason, setReason] = useState('');

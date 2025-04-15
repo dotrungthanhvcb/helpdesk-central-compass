@@ -1,6 +1,6 @@
 
 // Timesheet related types
-export type LeaveType = 'annual' | 'sick' | 'other';
+export type LeaveType = 'annual' | 'sick' | 'other' | 'paid' | 'unpaid' | 'wfh';
 
 export interface WorkLogEntry {
   id: string;

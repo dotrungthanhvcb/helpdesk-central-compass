@@ -1,4 +1,3 @@
-
 // Re-export contract types
 export * from './contracts';
 export * from './timesheet';
@@ -29,7 +28,6 @@ export type DeviceType = 'laptop' | 'pc' | 'vm' | 'byod';
 export type SetupLocation = 'onsite' | 'remote';
 export type SetupItemStatus = 'pending' | 'in_progress' | 'done' | 'blocked';
 export type ReviewCriteriaScore = 1 | 2 | 3 | 4 | 5;
-export type LeaveType = 'annual' | 'sick' | 'other';
 
 export interface Ticket {
   id: string;
@@ -68,7 +66,7 @@ export interface NotificationMessage {
   isRead: boolean;
   createdAt: string;
   ticketId?: string;
-  title: string; // Add this field to fix the errors
+  title: string;
 }
 
 export interface Attachment {
@@ -94,8 +92,8 @@ export interface OvertimeRequest {
   status: 'pending' | 'approved' | 'rejected';
   createdAt: string;
   updatedAt: string;
-  reviewerFeedback?: string; // Add this missing field
-  comment?: string; // Add this missing field
+  reviewerFeedback?: string;
+  comment?: string;
 }
 
 export interface WorkLogEntry {
@@ -126,7 +124,7 @@ export interface LeaveRequest {
   status: 'pending' | 'approved' | 'rejected';
   createdAt: string;
   updatedAt: string;
-  approverNote?: string; // Add this missing field
+  approverNote?: string;
 }
 
 export interface TimesheetSummary {
@@ -149,7 +147,7 @@ export interface OutsourceReview {
   reviewerName: string;
   projectId?: string;
   projectName?: string;
-  reviewDate: string; // Add this field
+  reviewDate: string;
   criteria: {
     technicalQuality: ReviewCriteriaScore;
     professionalAttitude: ReviewCriteriaScore;
@@ -157,8 +155,8 @@ export interface OutsourceReview {
     ruleCompliance: ReviewCriteriaScore;
     initiative: ReviewCriteriaScore;
   };
-  strengths?: string; // Add this field
-  areasToImprove?: string; // Add this field
+  strengths?: string;
+  areasToImprove?: string;
   createdAt: string;
   updatedAt: string;
 }
