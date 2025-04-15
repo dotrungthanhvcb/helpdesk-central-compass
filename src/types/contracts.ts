@@ -1,6 +1,6 @@
 
-export type ContractType = 'main' | 'nda' | 'compliance' | 'other';
-export type ContractStatus = 'active' | 'expired' | 'pending' | 'terminated';
+export type ContractType = 'main' | 'nda' | 'compliance' | 'other' | 'outsource' | 'service' | 'project' | 'maintenance';
+export type ContractStatus = 'active' | 'expired' | 'pending' | 'terminated' | 'draft';
 export type DocumentType = 'pdf' | 'docx' | 'image' | 'other';
 
 export interface Document {
@@ -17,22 +17,28 @@ export interface Document {
 
 export interface Contract {
   id: string;
+  contractNumber?: string;
   contractType: ContractType;
   staffName: string;
   staffId: string;
   company?: string;
-  effectiveDate: string;
-  expiryDate: string;
-  signedBy: string;
-  signedById: string;
+  startDate?: string;
+  endDate?: string;
+  effectiveDate?: string;
+  expiryDate?: string;
+  signedBy?: string;
+  signedById?: string;
   status: ContractStatus;
   notes?: string;
+  value?: number;
+  currency?: string;
+  paymentTerms?: string;
   documents: Document[];
   createdAt: string;
   updatedAt: string;
 }
 
-export type SquadRole = 'developer' | 'designer' | 'qa' | 'manager' | 'consultant' | 'other';
+export type SquadRole = 'developer' | 'designer' | 'qa' | 'manager' | 'consultant' | 'other' | 'tester' | 'analyst' | 'devops';
 
 export interface Squad {
   id: string;
@@ -66,8 +72,9 @@ export interface Assignment {
   projectName?: string;
   startDate: string;
   endDate?: string;
-  status: 'active' | 'completed' | 'upcoming';
-  utilization: number; // percentage
+  status: 'active' | 'completed' | 'upcoming' | 'planned';
+  allocation?: number;
+  utilization?: number; // percentage
   createdAt: string;
   updatedAt: string;
 }

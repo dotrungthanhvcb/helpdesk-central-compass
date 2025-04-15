@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { formatDistanceToNow, format } from "date-fns";
@@ -82,6 +83,13 @@ const TicketDetail = () => {
   const canAssign = user?.role === "agent" || user?.role === "supervisor";
   const isAssigned = !!ticket.assigneeId;
   const isCurrentUserAssigned = ticket.assigneeId === user?.id;
+
+  // Find the assigned user info
+  const assignedUser = ticket.assigneeId ? {
+    name: ticket.assigneeName || "Unknown",
+    department: "", // This would need to be fetched from the user service
+    avatar: "", // This would need to be fetched from the user service
+  } : null;
 
   return (
     <div className="space-y-6">
@@ -316,17 +324,17 @@ const TicketDetail = () => {
                 </div>
               </div>
               
-              {ticket.assignedTo && (
+              {assignedUser && (
                 <div className="space-y-2">
                   <h3 className="text-sm font-medium">Người xử lý</h3>
                   <div className="flex items-center">
                     <Avatar className="h-6 w-6 mr-2">
-                      <AvatarImage src={ticket.assignedTo.avatar} alt={ticket.assignedTo.name} />
-                      <AvatarFallback>{ticket.assignedTo.name.charAt(0)}</AvatarFallback>
+                      <AvatarImage src={assignedUser.avatar} alt={assignedUser.name} />
+                      <AvatarFallback>{assignedUser.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="text-sm font-medium">{ticket.assignedTo.name}</p>
-                      <p className="text-xs text-muted-foreground">{ticket.assignedTo.department}</p>
+                      <p className="text-sm font-medium">{assignedUser.name}</p>
+                      <p className="text-xs text-muted-foreground">{assignedUser.department}</p>
                     </div>
                   </div>
                 </div>

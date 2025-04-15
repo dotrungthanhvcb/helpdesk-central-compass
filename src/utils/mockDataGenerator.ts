@@ -171,8 +171,8 @@ const generateTickets = (users: User[], count: number): Ticket[] => {
 
 // Generate contract data
 const generateContracts = (users: User[], count: number): Contract[] => {
-  const contractTypes = ['outsource', 'service', 'project', 'maintenance'];
-  const contractStatuses = ['draft', 'active', 'expired', 'terminated'];
+  const contractTypes: ContractType[] = ['outsource', 'service', 'project', 'maintenance'];
+  const contractStatuses: ContractStatus[] = ['draft', 'active', 'expired', 'terminated'];
   const paymentTerms = ['monthly', 'quarterly', 'milestone', 'completion'];
   
   const contracts: Contract[] = [];
@@ -238,7 +238,7 @@ const generateProjects = (count: number): Project[] => {
     'Cổng thanh toán liên ngân hàng', 'Hệ thống xác thực sinh trắc học'
   ];
   
-  const projectStatuses = ['planning', 'development', 'testing', 'deployed', 'maintenance'];
+  const projectStatuses: ('active' | 'completed' | 'on-hold' | 'upcoming')[] = ['active', 'completed', 'on-hold', 'upcoming'];
   
   const projects: Project[] = [];
   
@@ -264,6 +264,9 @@ const generateProjects = (count: number): Project[] => {
 
 // Generate assignments data
 const generateAssignments = (users: User[], squads: Squad[], projects: Project[], count: number): Assignment[] => {
+  const assignmentRoles: SquadRole[] = ['developer', 'tester', 'analyst', 'designer', 'devops'];
+  const assignmentStatuses: ('active' | 'completed' | 'upcoming' | 'planned')[] = ['active', 'completed', 'upcoming', 'planned'];
+  
   const assignments: Assignment[] = [];
   
   for (let i = 0; i < count; i++) {
@@ -278,7 +281,7 @@ const generateAssignments = (users: User[], squads: Squad[], projects: Project[]
       id: `assignment-${i + 1}`,
       staffId: staff.id,
       staffName: staff.name,
-      role: randomElement(['developer', 'tester', 'analyst', 'designer', 'devops']),
+      role: randomElement(assignmentRoles),
       startDate,
       endDate,
       squadId: squad?.id,
@@ -286,7 +289,7 @@ const generateAssignments = (users: User[], squads: Squad[], projects: Project[]
       projectId: project?.id,
       projectName: project?.name,
       allocation: randomInt(25, 100),
-      status: randomElement(['active', 'completed', 'planned']),
+      status: randomElement(assignmentStatuses),
       createdAt: formatDate(subDays(new Date(startDate), randomInt(1, 30))),
       updatedAt: formatDate(subDays(new Date(), randomInt(0, 30))),
     };
