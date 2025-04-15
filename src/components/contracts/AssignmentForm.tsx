@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useApp } from "@/contexts/AppContext";
@@ -15,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { useToast } from "@/hooks/use-toast";
-import { User, Squad, Project, SquadRole } from "@/types/contracts";
+import { SquadRole } from "@/types/contracts";
 
 interface AssignmentFormProps {
   onSuccess?: () => void;
@@ -48,7 +47,6 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   const [status, setStatus] = useState<"active" | "completed" | "upcoming">("active");
   const [utilization, setUtilization] = useState<number>(100);
 
-  // If in edit mode, load the assignment data
   useEffect(() => {
     if (editMode && assignmentId) {
       const assignment = assignments.find(a => a.id === assignmentId);
@@ -124,7 +122,6 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
     }
   };
 
-  // Filter users who can be assigned (outsource staff)
   const outsourceStaff = users.filter(user => 
     user.role === 'requester' || user.department?.toLowerCase().includes('outsource')
   );
