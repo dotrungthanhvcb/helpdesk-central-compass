@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
@@ -16,7 +15,7 @@ import {
   StarIcon,
   HardDriveIcon,
   FileTextIcon,
-  UsersThreeIcon
+  Users
 } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -34,28 +33,24 @@ const Sidebar = () => {
     { name: "Create Ticket", href: "/tickets/new", icon: PlusCircleIcon },
     { name: "Notifications", href: "/notifications", icon: InboxIcon, badge: unreadNotificationsCount },
     { name: "Analytics", href: "/analytics", icon: BarChart3Icon },
-    // Add new contract module navigation items
     { name: "Timesheets", href: "/timesheets", icon: ClockIcon },
     { name: "Environment Setup", href: "/environment-setup", icon: HardDriveIcon },
   ];
 
-  // Only show Outsource Review and Contracts for supervisors or admins
   const isManager = user && (user.role === 'supervisor' || user.role === 'admin');
   
   if (isManager) {
     navigation.push(
       { name: "Outsource Review", href: "/reviews", icon: StarIcon },
       { name: "Contracts", href: "/contracts", icon: FileTextIcon },
-      { name: "Squad Allocation", href: "/squad-allocation", icon: UsersThreeIcon }
+      { name: "Squad Allocation", href: "/squad-allocation", icon: Users }
     );
   }
 
-  // Admin-only navigation items
   const adminNavigation = [
     { name: "Users & Teams", href: "/users", icon: UsersIcon },
   ];
 
-  // User profile and settings
   const userNavigation = [
     { name: "My Profile", href: "/profile", icon: UserIcon },
     { name: "Settings", href: "/settings", icon: SettingsIcon },
