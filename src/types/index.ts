@@ -1,85 +1,25 @@
-// Re-export contract types
-export * from './contracts';
-export * from './timesheet';
+import { LeaveType } from './timesheet';
+import { AuthUser, UserRole } from './auth';
 
+// Re-export types
+export { LeaveType, AuthUser, UserRole };
+
+// User
 export interface User {
   id: string;
   name: string;
   email: string;
   password?: string;
-  role: 'admin' | 'supervisor' | 'agent' | 'approver' | 'requester';
+  role: string;
   department?: string;
   position?: string;
-  avatar?: string;
   isActive: boolean;
   createdAt: string;
   lastLogin?: string;
   permissions?: string[];
-  managerId?: string;
-  phone?: string;
-  address?: string;
 }
 
-export type TicketStatus = 'open' | 'in progress' | 'resolved' | 'closed' | 'pending' | 'approved' | 'rejected';
-export type TicketCategory = 'tech_setup' | 'dev_issues' | 'mentoring' | 'hr_matters';
-export type TicketPriority = 'low' | 'medium' | 'high' | 'urgent';
-export type UserRole = 'admin' | 'supervisor' | 'agent' | 'approver' | 'requester';
-export type DeviceType = 'laptop' | 'pc' | 'vm' | 'byod';
-export type SetupLocation = 'onsite' | 'remote';
-export type SetupItemStatus = 'pending' | 'in_progress' | 'done' | 'blocked';
-export type ReviewCriteriaScore = 1 | 2 | 3 | 4 | 5;
-
-export interface Ticket {
-  id: string;
-  title: string;
-  description: string;
-  status: TicketStatus;
-  priority: TicketPriority;
-  category: TicketCategory;
-  requester: User;
-  assigneeId?: string;
-  assigneeName?: string;
-  comments?: Comment[];
-  attachments?: Attachment[];
-  approvers?: User[];
-  tags?: string[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface Comment {
-  id: string;
-  ticketId: string;
-  userId: string;
-  userName: string;
-  userAvatar: string;
-  content: string;
-  createdAt: string;
-}
-
-export interface NotificationMessage {
-  id: string;
-  userId: string;
-  type: 'ticket' | 'request' | 'announcement';
-  message: string;
-  link: string;
-  isRead: boolean;
-  createdAt: string;
-  ticketId?: string;
-  title: string;
-}
-
-export interface Attachment {
-  id: string;
-  ticketId: string;
-  fileName: string;
-  fileSize: number;
-  fileType: string;
-  url: string;
-  uploadedAt: string;
-  uploadedBy: string;
-}
-
+// OT Request
 export interface OvertimeRequest {
   id: string;
   userId: string;
@@ -90,106 +30,118 @@ export interface OvertimeRequest {
   totalHours: number;
   reason: string;
   status: 'pending' | 'approved' | 'rejected';
-  createdAt: string;
-  updatedAt: string;
-  reviewerFeedback?: string;
-  comment?: string;
-}
-
-export interface WorkLogEntry {
-  id: string;
-  userId: string;
-  date: string;
-  startTime: string;
-  endTime: string;
-  hours: number;
-  description: string;
-  projectId?: string;
-  projectName?: string;
-  taskId?: string;
-  taskName?: string;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface LeaveRequest {
-  id: string;
-  userId: string;
-  userName: string;
-  type: LeaveType;
-  startDate: string;
-  endDate: string;
-  totalDays: number;
-  reason: string;
-  status: 'pending' | 'approved' | 'rejected';
-  createdAt: string;
-  updatedAt: string;
   approverNote?: string;
+  approverId?: string;
+  approverName?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export interface TimesheetSummary {
-  userId: string;
-  period: string;
-  startDate: string;
-  endDate: string;
-  regularHours: number;
-  overtimeHours: number;
-  weekendOvertimeHours: number;
-  leaveCount: number;
-  completionRate: number;
-}
-
+// Outsource Review
 export interface OutsourceReview {
   id: string;
-  revieweeId: string;
-  revieweeName: string;
   reviewerId: string;
   reviewerName: string;
+  revieweeId: string;
+  revieweeName: string;
+  reviewDate: string;
+  period: string;
   projectId?: string;
   projectName?: string;
-  reviewDate: string;
-  criteria: {
-    technicalQuality: ReviewCriteriaScore;
-    professionalAttitude: ReviewCriteriaScore;
-    communication: ReviewCriteriaScore;
-    ruleCompliance: ReviewCriteriaScore;
-    initiative: ReviewCriteriaScore;
+  scores: {
+    technical: number;
+    communication: number;
+    teamwork: number;
+    leadership: number;
+    overall: number;
   };
-  strengths?: string;
-  areasToImprove?: string;
+  strengths?: string[];
+  weaknesses?: string[];
+  comments?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+// Environment Setup Request
+export interface EnvironmentSetup {
+  id: string;
+  requesterId: string;
+  requesterName: string;
+  staffId: string;
+  staffName: string;
+  startDate: string;
+  projectId?: string;
+  projectName?: string;
+  status: 'pending' | 'in_progress' | 'completed';
+  items: SetupItem[];
+  completedCount: number;
+  totalCount: number;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface SetupItem {
   id: string;
-  title: string;
+  setupId: string;
+  name: string;
   description?: string;
-  category: 'device' | 'mdm' | 'os' | 'software' | 'account';
-  status: SetupItemStatus;
+  category: 'hardware' | 'software' | 'access' | 'other';
+  status: 'pending' | 'in_progress' | 'completed' | 'blocked';
+  assigneeId?: string;
+  assigneeName?: string;
+  dueDate?: string;
   notes?: string;
-  ticketId?: string;
-  completedAt?: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface EnvironmentSetup {
+// Notification
+export interface NotificationMessage {
   id: string;
-  employeeId: string;
-  employeeName: string;
-  deviceType: DeviceType;
-  setupLocation: SetupLocation;
-  requestDate: string;
-  responsibleId?: string;
-  responsibleName?: string;
-  status: TicketStatus;
-  notes?: string;
-  items: SetupItem[];
-  completionDate?: string;
-  verifiedById?: string;
-  verifiedByName?: string;
-  verificationNotes?: string;
+  userId: string;
+  title: string;
+  message: string;
+  type: 'info' | 'warning' | 'success' | 'error';
+  isRead: boolean;
+  linkTo?: string;
+  createdAt: string;
+}
+
+// Ticket
+export interface Ticket {
+  id: string;
+  title: string;
+  description: string;
+  category: 'hardware' | 'software' | 'network' | 'access' | 'other';
+  priority: 'low' | 'medium' | 'high' | 'urgent';
+  status: 'open' | 'in_progress' | 'pending' | 'resolved' | 'closed';
+  requesterId: string;
+  requester?: User;
+  assigneeId?: string;
+  assignee?: User;
   createdAt: string;
   updatedAt: string;
+  dueDate?: string;
+  comments?: Comment[];
+  attachments?: Attachment[];
+}
+
+export interface Comment {
+  id: string;
+  ticketId: string;
+  userId: string;
+  userName?: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface Attachment {
+  id: string;
+  ticketId: string;
+  userId: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  fileUrl: string;
+  uploadedAt: string;
 }
