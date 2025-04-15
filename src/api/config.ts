@@ -1,6 +1,4 @@
 
-import { toast } from "@/hooks/use-toast";
-
 // Base API configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -68,12 +66,7 @@ export const apiRequest = async <T>(
     
     return data;
   } catch (error: any) {
-    // Show toast for API errors
-    toast({
-      title: "API Error",
-      description: error.message || "Something went wrong with the request",
-      variant: "destructive",
-    });
+    console.error('API Request Error:', error);
     throw error;
   }
 };
@@ -120,11 +113,6 @@ export const uploadFileToS3 = async (
     return response.ok;
   } catch (error) {
     console.error('Error uploading to S3:', error);
-    toast({
-      title: "Upload Failed",
-      description: "Could not upload file to storage. Please try again.",
-      variant: "destructive",
-    });
     return false;
   }
 };

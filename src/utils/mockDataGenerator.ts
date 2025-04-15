@@ -1,95 +1,64 @@
 
-import { User, Ticket, TicketStatus, TicketCategory, TicketPriority, OvertimeRequest, OutsourceReview, EnvironmentSetup, LeaveRequest } from "@/types";
-import { Contract, Squad, Project, Assignment, ContractType, ContractStatus, SquadRole } from "@/types/contracts";
-import { format, addDays, subDays, differenceInDays } from "date-fns";
+import { faker } from '@faker-js/faker';
+import { User, Ticket, OvertimeRequest, LeaveRequest, OutsourceReview, EnvironmentSetup, SetupItem } from '@/types';
+import { Contract, Squad, Project, Assignment } from '@/types/contracts';
 
-// Helper functions
-const randomElement = <T>(array: T[]): T => {
+// Set a seed for reproducibility
+faker.seed(123);
+
+// Helper function to get random item from array
+const getRandomItem = <T>(array: T[]): T => {
   return array[Math.floor(Math.random() * array.length)];
 };
 
-const randomInt = (min: number, max: number): number => {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-};
-
-const randomDate = (start: Date, end: Date): Date => {
+// Generate a random date between two dates
+const randomDate = (start: Date, end: Date) => {
   return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
 };
 
-const formatDate = (date: Date): string => {
-  return format(date, 'yyyy-MM-dd');
+// Format date to ISO string
+const formatDate = (date: Date) => {
+  return date.toISOString().split('T')[0];
 };
 
-const formatTime = (hours: number, minutes: number): string => {
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-};
-
-const generateName = (): { firstName: string, lastName: string, fullName: string } => {
-  const firstNames = [
-    'Nguyễn', 'Trần', 'Lê', 'Phạm', 'Hoàng', 'Huỳnh', 'Phan', 'Vũ', 'Võ', 'Đặng',
-    'Bùi', 'Đỗ', 'Hồ', 'Ngô', 'Dương', 'Lý'
-  ];
-  
-  const lastNames = [
-    'An', 'Bình', 'Cường', 'Dũng', 'Đạt', 'Hùng', 'Huy', 'Khoa', 'Minh', 'Nam', 
-    'Phong', 'Quân', 'Tâm', 'Thành', 'Tuấn', 'Việt', 'Vũ', 'Anh', 'Hương', 'Lan', 
-    'Mai', 'Ngọc', 'Nhung', 'Thảo', 'Trang', 'Trinh', 'Uyên', 'Xuân', 'Yến'
-  ];
-  
-  const firstName = randomElement(firstNames);
-  const lastName = randomElement(lastNames);
-  const fullName = `${firstName} Văn ${lastName}`;
-  
-  return { firstName, lastName, fullName };
-};
-
-const generateEmail = (name: string): string => {
-  const cleanedName = name
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/\s+/g, '.');
-  
-  const domains = ['vietcombank.com.vn', 'vcb.com.vn', 'example.com', 'mail.com'];
-  return `${cleanedName}@${randomElement(domains)}`;
-};
-
-// Generate user data
-const generateUsers = (count: number): User[] => {
-  const roles: Array<'admin' | 'supervisor' | 'agent' | 'approver' | 'requester'> = [
-    'admin', 'supervisor', 'agent', 'approver', 'requester'
-  ];
-  
-  const departments = [
-    'IT', 'HR', 'Finance', 'Operations', 'Marketing', 'Development', 'Testing',
-    'DevOps', 'Support', 'Security'
-  ];
-  
-  const positions = [
-    'Manager', 'Team Lead', 'Senior Developer', 'Developer', 'Junior Developer',
-    'Analyst', 'Specialist', 'Administrator', 'Coordinator', 'Consultant'
-  ];
+// Generate users with different roles
+export const generateUsers = (count: number) => {
+  const roles = ['admin', 'hr', 'it_support', 'supervisor', 'employee'];
+  const departments = ['IT', 'HR', 'Finance', 'Operations', 'Marketing'];
   
   const users: User[] = [];
   
-  for (let i = 0; i < count; i++) {
-    const { fullName } = generateName();
-    const email = generateEmail(fullName);
-    
+  // Ensure we have at least one of each role
+  roles.forEach(role => {
     const user: User = {
-      id: `user-${i + 1}`,
-      name: fullName,
-      email,
-      password: 'password',
-      role: randomElement(roles),
-      department: randomElement(departments),
-      position: randomElement(positions),
-      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=random`,
-      isActive: Math.random() > 0.1, // 90% active
-      createdAt: formatDate(subDays(new Date(), randomInt(30, 600))),
-      lastLogin: formatDate(subDays(new Date(), randomInt(0, 30))),
-      phone: `+84${randomInt(9000000, 9999999)}`,
-      address: `${randomInt(1, 100)} ${randomElement(['Nguyễn Huệ', 'Lê Lợi', 'Trần Hưng Đạo', 'Điện Biên Phủ', 'Lê Duẩn', 'Phạm Ngọc Thạch'])} Street, ${randomElement(['Hà Nội', 'Hồ Chí Minh', 'Đà Nẵng', 'Cần Thơ', 'Hải Phòng'])}`,
+      id: faker.string.uuid(),
+      name: faker.person.fullName(),
+      email: faker.internet.email().toLowerCase(),
+      password: 'password', // Default password for testing
+      role,
+      department: getRandomItem(departments),
+      position: `${role.charAt(0).toUpperCase() + role.slice(1)}`,
+      isActive: true,
+      createdAt: faker.date.past().toISOString(),
+      lastLogin: faker.date.recent().toISOString(),
+    };
+    
+    users.push(user);
+  });
+  
+  // Generate remaining users
+  for (let i = users.length; i < count; i++) {
+    const user: User = {
+      id: faker.string.uuid(),
+      name: faker.person.fullName(),
+      email: faker.internet.email().toLowerCase(),
+      password: 'password', // Default password for testing
+      role: getRandomItem(roles),
+      department: getRandomItem(departments),
+      position: faker.person.jobTitle(),
+      isActive: faker.datatype.boolean(0.9), // 90% are active
+      createdAt: faker.date.past().toISOString(),
+      lastLogin: faker.date.recent().toISOString(),
     };
     
     users.push(user);
@@ -98,129 +67,19 @@ const generateUsers = (count: number): User[] => {
   return users;
 };
 
-// Generate ticket data
-const generateTickets = (users: User[], count: number): Ticket[] => {
-  const statuses: TicketStatus[] = ['open', 'in progress', 'resolved', 'closed', 'pending', 'approved', 'rejected'];
-  const categories: TicketCategory[] = ['tech_setup', 'dev_issues', 'mentoring', 'hr_matters'];
-  const priorities: TicketPriority[] = ['low', 'medium', 'high', 'urgent'];
-  
-  const ticketTitles = [
-    'Cần hỗ trợ cài đặt môi trường DEV',
-    'Yêu cầu cấp tài khoản truy cập hệ thống',
-    'Lỗi kết nối VPN', 
-    'Không thể truy cập Jenkins',
-    'Cần góp ý về thiết kế API',
-    'Vấn đề hiệu suất React app',
-    'Yêu cầu mở quyền truy cập DB',
-    'Lỗi xác thực 2FA',
-    'Cần mentor về unit testing',
-    'Đề xuất cải tiến quy trình CI/CD',
-    'Phản ánh lỗi hiển thị trang dashboard',
-    'Yêu cầu xem xét code frontend',
-    'Lỗi tích hợp với API thanh toán',
-    'Vấn đề hiệu suất query Database',
-    'Yêu cầu khóa tài khoản outsource'
-  ];
-  
-  const tickets: Ticket[] = [];
-  
-  for (let i = 0; i < count; i++) {
-    const requester = randomElement(users);
-    const assignee = randomElement(users);
-    const createdAt = formatDate(subDays(new Date(), randomInt(0, 90)));
-    
-    const ticket: Ticket = {
-      id: `ticket-${i + 1}`,
-      title: randomElement(ticketTitles),
-      description: `Mô tả chi tiết về vấn đề: ${randomElement(ticketTitles)} cần được giải quyết gấp.`,
-      status: randomElement(statuses),
-      priority: randomElement(priorities),
-      category: randomElement(categories),
-      requester,
-      assigneeId: assignee.id,
-      assigneeName: assignee.name,
-      createdAt,
-      updatedAt: formatDate(randomDate(new Date(createdAt), new Date())),
-      comments: [],
-      attachments: [],
-      tags: ['outsource', 'support', 'technical'],
-    };
-    
-    // Add random comments
-    if (Math.random() > 0.5) {
-      const commentCount = randomInt(1, 5);
-      for (let j = 0; j < commentCount; j++) {
-        const commentUser = randomElement(users);
-        ticket.comments?.push({
-          id: `comment-${i}-${j}`,
-          ticketId: ticket.id,
-          userId: commentUser.id,
-          userName: commentUser.name,
-          userAvatar: commentUser.avatar || '',
-          content: `Comment về ticket này: ${Math.random() > 0.5 ? 'Đã xử lý theo yêu cầu.' : 'Cần thêm thông tin để xử lý.'}`,
-          createdAt: formatDate(randomDate(new Date(createdAt), new Date())),
-        });
-      }
-    }
-    
-    tickets.push(ticket);
-  }
-  
-  return tickets;
-};
-
-// Generate contract data
-const generateContracts = (users: User[], count: number): Contract[] => {
-  const contractTypes: ContractType[] = ['outsource', 'service', 'project', 'maintenance'];
-  const contractStatuses: ContractStatus[] = ['draft', 'active', 'expired', 'terminated'];
-  const paymentTerms = ['monthly', 'quarterly', 'milestone', 'completion'];
-  
-  const contracts: Contract[] = [];
-  
-  for (let i = 0; i < count; i++) {
-    const staff = randomElement(users);
-    const startDate = formatDate(subDays(new Date(), randomInt(10, 365)));
-    const endDate = formatDate(addDays(new Date(startDate), randomInt(90, 730)));
-    
-    const contract: Contract = {
-      id: `contract-${i + 1}`,
-      contractNumber: `VCB-OS-${2023 + randomInt(0, 2)}-${(i + 1).toString().padStart(4, '0')}`,
-      staffId: staff.id,
-      staffName: staff.name,
-      contractType: randomElement(contractTypes),
-      startDate,
-      endDate,
-      status: randomElement(contractStatuses),
-      value: randomInt(100, 500) * 1000000,
-      currency: 'VND',
-      paymentTerms: randomElement(paymentTerms),
-      createdAt: formatDate(subDays(new Date(startDate), randomInt(1, 30))),
-      updatedAt: formatDate(subDays(new Date(), randomInt(0, 30))),
-      documents: [],
-    };
-    
-    contracts.push(contract);
-  }
-  
-  return contracts;
-};
-
-// Generate squads data
-const generateSquads = (count: number): Squad[] => {
-  const squadNames = [
-    'Core Banking', 'Digital Banking', 'Payment Gateway', 'Mobile Banking', 
-    'Internet Banking', 'API Integration', 'Security', 'Data Analytics',
-    'Frontend', 'Backend', 'DevOps', 'QA'
-  ];
-  
+// Generate squads
+export const generateSquads = (count: number) => {
   const squads: Squad[] = [];
   
   for (let i = 0; i < count; i++) {
     const squad: Squad = {
-      id: `squad-${i + 1}`,
-      name: i < squadNames.length ? squadNames[i] : `Squad ${i + 1}`,
-      description: `Đội nhóm phát triển và hỗ trợ cho hệ thống ${i < squadNames.length ? squadNames[i] : `Squad ${i + 1}`}`,
-      createdAt: formatDate(subDays(new Date(), randomInt(30, 365))),
+      id: faker.string.uuid(),
+      name: `Squad ${faker.company.name().split(' ')[0]}`,
+      description: faker.lorem.sentence(),
+      leadId: faker.string.uuid(),
+      leadName: faker.person.fullName(),
+      members: faker.number.int({ min: 3, max: 10 }),
+      createdAt: faker.date.past().toISOString(),
     };
     
     squads.push(squad);
@@ -229,31 +88,26 @@ const generateSquads = (count: number): Squad[] => {
   return squads;
 };
 
-// Generate projects data
-const generateProjects = (count: number): Project[] => {
-  const projectNames = [
-    'Nâng cấp Core Banking', 'VCB Digibank 2.0', 'VCB Pay Gateway', 
-    'Ứng dụng Mobile Banking mới', 'Hệ thống quản lý tài khoản',
-    'API Ngân hàng mở', 'Bảo mật đa lớp', 'Hệ thống dashboard phân tích',
-    'Cổng thanh toán liên ngân hàng', 'Hệ thống xác thực sinh trắc học'
-  ];
-  
-  const projectStatuses: ('active' | 'completed' | 'on-hold' | 'upcoming')[] = ['active', 'completed', 'on-hold', 'upcoming'];
-  
+// Generate projects
+export const generateProjects = (count: number) => {
+  const statuses = ['planning', 'active', 'completed', 'on_hold'];
   const projects: Project[] = [];
   
   for (let i = 0; i < count; i++) {
-    const startDate = formatDate(subDays(new Date(), randomInt(10, 365)));
-    const endDate = formatDate(addDays(new Date(startDate), randomInt(90, 730)));
+    const startDate = faker.date.past();
+    const endDate = new Date(startDate);
+    endDate.setMonth(endDate.getMonth() + faker.number.int({ min: 1, max: 12 }));
     
     const project: Project = {
-      id: `project-${i + 1}`,
-      name: i < projectNames.length ? projectNames[i] : `Project ${i + 1}`,
-      description: `Dự án ${i < projectNames.length ? projectNames[i] : `Project ${i + 1}`} của ngân hàng số VCB`,
-      startDate,
-      endDate,
-      status: randomElement(projectStatuses),
-      createdAt: formatDate(subDays(new Date(startDate), randomInt(1, 30))),
+      id: faker.string.uuid(),
+      name: `Project ${faker.company.buzzNoun()}`,
+      description: faker.lorem.paragraph(),
+      clientId: faker.string.uuid(),
+      clientName: faker.company.name(),
+      startDate: formatDate(startDate),
+      endDate: formatDate(endDate),
+      status: getRandomItem(statuses),
+      createdAt: faker.date.past().toISOString(),
     };
     
     projects.push(project);
@@ -262,241 +116,424 @@ const generateProjects = (count: number): Project[] => {
   return projects;
 };
 
-// Generate assignments data
-const generateAssignments = (users: User[], squads: Squad[], projects: Project[], count: number): Assignment[] => {
-  const assignmentRoles: SquadRole[] = ['developer', 'tester', 'analyst', 'designer', 'devops'];
-  const assignmentStatuses: ('active' | 'completed' | 'upcoming' | 'planned')[] = ['active', 'completed', 'upcoming', 'planned'];
+// Generate contracts for staff
+export const generateContracts = (users: User[], count: number) => {
+  const types = ['outsource', 'fulltime', 'parttime', 'contract'];
+  const contracts: Contract[] = [];
   
+  users.forEach(user => {
+    // Generate random number of contracts per user (1-5)
+    const contractCount = faker.number.int({ min: 1, max: count });
+    
+    for (let i = 0; i < contractCount; i++) {
+      const startDate = faker.date.past();
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + faker.number.int({ min: 3, max: 24 }));
+      
+      const contract: Contract = {
+        id: faker.string.uuid(),
+        staffId: user.id,
+        staffName: user.name,
+        type: getRandomItem(types),
+        title: faker.person.jobTitle(),
+        startDate: formatDate(startDate),
+        endDate: formatDate(endDate),
+        rate: faker.number.float({ min: 10, max: 100, precision: 0.01 }),
+        currency: 'USD',
+        isActive: faker.datatype.boolean(0.8), // 80% are active
+        documents: [],
+        createdAt: faker.date.past().toISOString(),
+        updatedAt: faker.date.recent().toISOString(),
+      };
+      
+      contracts.push(contract);
+    }
+  });
+  
+  return contracts;
+};
+
+// Generate assignments
+export const generateAssignments = (users: User[], squads: Squad[], projects: Project[]) => {
+  const roles = ['developer', 'tester', 'designer', 'analyst', 'manager'];
   const assignments: Assignment[] = [];
   
-  for (let i = 0; i < count; i++) {
-    const staff = randomElement(users);
-    const squad = Math.random() > 0.2 ? randomElement(squads) : undefined; // 80% have squad
-    const project = Math.random() > 0.2 ? randomElement(projects) : undefined; // 80% have project
-    
-    const startDate = formatDate(subDays(new Date(), randomInt(10, 180)));
-    const endDate = formatDate(addDays(new Date(startDate), randomInt(30, 365)));
-    
-    const assignment: Assignment = {
-      id: `assignment-${i + 1}`,
-      staffId: staff.id,
-      staffName: staff.name,
-      role: randomElement(assignmentRoles),
-      startDate,
-      endDate,
-      squadId: squad?.id,
-      squadName: squad?.name,
-      projectId: project?.id,
-      projectName: project?.name,
-      allocation: randomInt(25, 100),
-      status: randomElement(assignmentStatuses),
-      createdAt: formatDate(subDays(new Date(startDate), randomInt(1, 30))),
-      updatedAt: formatDate(subDays(new Date(), randomInt(0, 30))),
-    };
-    
-    assignments.push(assignment);
-  }
+  users.forEach(user => {
+    // 80% chance to have an assignment
+    if (faker.datatype.boolean(0.8)) {
+      const squad = getRandomItem(squads);
+      const project = getRandomItem(projects);
+      
+      const startDate = faker.date.past();
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + faker.number.int({ min: 1, max: 12 }));
+      
+      const assignment: Assignment = {
+        id: faker.string.uuid(),
+        staffId: user.id,
+        staffName: user.name,
+        squadId: squad.id,
+        squadName: squad.name,
+        projectId: project.id,
+        projectName: project.name,
+        role: getRandomItem(roles),
+        allocation: faker.number.int({ min: 25, max: 100 }),
+        startDate: formatDate(startDate),
+        endDate: formatDate(endDate),
+        notes: faker.lorem.sentence(),
+        createdAt: faker.date.past().toISOString(),
+        updatedAt: faker.date.recent().toISOString(),
+      };
+      
+      assignments.push(assignment);
+    }
+  });
   
   return assignments;
 };
 
-// Generate overtime requests
-const generateOvertimeRequests = (users: User[], count: number): OvertimeRequest[] => {
-  const overtimeRequests: OvertimeRequest[] = [];
+// Generate tickets
+export const generateTickets = (users: User[], count: number) => {
+  const categories = ['hardware', 'software', 'network', 'access', 'other'];
+  const priorities = ['low', 'medium', 'high', 'urgent'];
+  const statuses = ['open', 'in_progress', 'pending', 'resolved', 'closed'];
+  
+  const tickets: Ticket[] = [];
   
   for (let i = 0; i < count; i++) {
-    const user = randomElement(users);
-    const date = formatDate(subDays(new Date(), randomInt(1, 30)));
-    const startHour = randomInt(17, 19);
-    const endHour = randomInt(startHour + 2, 23);
-    const totalHours = endHour - startHour;
+    const requesterId = getRandomItem(users).id;
+    const assigneeId = faker.datatype.boolean(0.7) ? getRandomItem(users).id : undefined;
     
-    const overtimeRequest: OvertimeRequest = {
-      id: `ot-${i + 1}`,
-      userId: user.id,
-      userName: user.name,
-      date,
-      startTime: formatTime(startHour, 0),
-      endTime: formatTime(endHour, 0),
-      totalHours,
-      reason: `Công việc khẩn cấp: ${randomElement(['Chuẩn bị triển khai', 'Xử lý sự cố', 'Hỗ trợ release', 'Testing gấp', 'Họp với client'])}`,
-      status: randomElement(['pending', 'approved', 'rejected']),
-      createdAt: formatDate(subDays(new Date(date), randomInt(1, 5))),
-      updatedAt: formatDate(subDays(new Date(date), randomInt(0, 5))),
-      reviewerFeedback: Math.random() > 0.7 ? 'Đồng ý với yêu cầu OT này.' : undefined,
-      comment: Math.random() > 0.7 ? 'Ghi chú thêm về yêu cầu OT.' : undefined,
+    const ticket: Ticket = {
+      id: faker.string.uuid(),
+      title: faker.lorem.sentence().slice(0, 50),
+      description: faker.lorem.paragraphs(2),
+      category: getRandomItem(categories) as any,
+      priority: getRandomItem(priorities) as any,
+      status: getRandomItem(statuses) as any,
+      requesterId,
+      assigneeId,
+      createdAt: faker.date.past().toISOString(),
+      updatedAt: faker.date.recent().toISOString(),
+      dueDate: faker.datatype.boolean(0.6) ? formatDate(faker.date.future()) : undefined,
+      comments: [],
+      attachments: [],
     };
     
-    overtimeRequests.push(overtimeRequest);
+    // Add random comments
+    const commentCount = faker.number.int({ min: 0, max: 5 });
+    for (let j = 0; j < commentCount; j++) {
+      const commentUser = getRandomItem(users);
+      ticket.comments?.push({
+        id: faker.string.uuid(),
+        ticketId: ticket.id,
+        userId: commentUser.id,
+        userName: commentUser.name,
+        content: faker.lorem.paragraph(),
+        createdAt: faker.date.recent().toISOString(),
+      });
+    }
+    
+    tickets.push(ticket);
   }
+  
+  return tickets;
+};
+
+// Generate overtime requests
+export const generateOvertimeRequests = (users: User[]) => {
+  const overtimeRequests: OvertimeRequest[] = [];
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now);
+  thirtyDaysAgo.setDate(now.getDate() - 30);
+  
+  users.forEach(user => {
+    // 60% chance to have overtime requests
+    if (faker.datatype.boolean(0.6)) {
+      // Generate 1-5 overtime requests per user
+      const requestCount = faker.number.int({ min: 1, max: 5 });
+      
+      for (let i = 0; i < requestCount; i++) {
+        const requestDate = randomDate(thirtyDaysAgo, now);
+        const status = getRandomItem(['pending', 'approved', 'rejected']);
+        
+        const startTime = `${faker.number.int({ min: 17, max: 20 })}:00`;
+        const endTime = `${faker.number.int({ min: 20, max: 23 })}:00`;
+        const totalHours = faker.number.int({ min: 1, max: 5 });
+        
+        let approverId, approverName, approverNote;
+        if (status !== 'pending') {
+          const approver = getRandomItem(users.filter(u => u.role === 'supervisor' || u.role === 'admin'));
+          approverId = approver.id;
+          approverName = approver.name;
+          
+          if (status === 'rejected') {
+            approverNote = faker.lorem.sentence();
+          }
+        }
+        
+        const overtimeRequest: OvertimeRequest = {
+          id: faker.string.uuid(),
+          userId: user.id,
+          userName: user.name,
+          date: formatDate(requestDate),
+          startTime,
+          endTime,
+          totalHours,
+          reason: faker.lorem.sentence(),
+          status: status as any,
+          approverNote,
+          approverId,
+          approverName,
+          createdAt: faker.date.past().toISOString(),
+          updatedAt: faker.date.recent().toISOString(),
+        };
+        
+        overtimeRequests.push(overtimeRequest);
+      }
+    }
+  });
   
   return overtimeRequests;
 };
 
 // Generate leave requests
-const generateLeaveRequests = (users: User[], count: number): LeaveRequest[] => {
+export const generateLeaveRequests = (users: User[]) => {
+  const leaveTypes: LeaveType[] = ['annual', 'sick', 'other', 'paid', 'unpaid', 'wfh'];
   const leaveRequests: LeaveRequest[] = [];
   
-  for (let i = 0; i < count; i++) {
-    const user = randomElement(users);
-    const startDate = formatDate(subDays(new Date(), randomInt(1, 60)));
-    const totalDays = randomInt(1, 5);
-    const endDate = formatDate(addDays(new Date(startDate), totalDays - 1));
-    
-    const leaveRequest: LeaveRequest = {
-      id: `leave-${i + 1}`,
-      userId: user.id,
-      userName: user.name,
-      type: randomElement(['annual', 'sick', 'other']),
-      startDate,
-      endDate,
-      totalDays,
-      reason: `${randomElement(['Nghỉ phép năm', 'Bị ốm cần nghỉ ngơi', 'Việc gia đình', 'Khám sức khỏe', 'Đi công tác'])}`,
-      status: randomElement(['pending', 'approved', 'rejected']),
-      createdAt: formatDate(subDays(new Date(startDate), randomInt(1, 10))),
-      updatedAt: formatDate(subDays(new Date(startDate), randomInt(0, 10))),
-      approverNote: Math.random() > 0.7 ? 'Ghi chú từ người phê duyệt.' : undefined,
-    };
-    
-    leaveRequests.push(leaveRequest);
-  }
+  users.forEach(user => {
+    // 70% chance to have leave requests
+    if (faker.datatype.boolean(0.7)) {
+      // Generate 1-3 leave requests per user
+      const requestCount = faker.number.int({ min: 1, max: 3 });
+      
+      for (let i = 0; i < requestCount; i++) {
+        const status = getRandomItem(['pending', 'approved', 'rejected']) as 'pending' | 'approved' | 'rejected';
+        const startDate = faker.date.soon();
+        const totalDays = faker.number.int({ min: 1, max: 5 });
+        const endDate = new Date(startDate);
+        endDate.setDate(startDate.getDate() + totalDays - 1);
+        
+        let approverId, approverName, approverNote;
+        if (status !== 'pending') {
+          const approver = getRandomItem(users.filter(u => u.role === 'supervisor' || u.role === 'admin'));
+          approverId = approver.id;
+          approverName = approver.name;
+          
+          if (status === 'rejected') {
+            approverNote = faker.lorem.sentence();
+          }
+        }
+        
+        const leaveRequest: LeaveRequest = {
+          id: faker.string.uuid(),
+          userId: user.id,
+          userName: user.name,
+          type: getRandomItem(leaveTypes),
+          startDate: formatDate(startDate),
+          endDate: formatDate(endDate),
+          totalDays,
+          reason: faker.lorem.sentence(),
+          status,
+          approverNote,
+          approverId,
+          approverName,
+          createdAt: faker.date.past().toISOString(),
+          updatedAt: faker.date.recent().toISOString(),
+        };
+        
+        leaveRequests.push(leaveRequest);
+      }
+    }
+  });
   
   return leaveRequests;
 };
 
 // Generate reviews
-const generateReviews = (users: User[], count: number): OutsourceReview[] => {
+export const generateReviews = (users: User[]) => {
   const reviews: OutsourceReview[] = [];
   
-  for (let i = 0; i < count; i++) {
-    const reviewer = randomElement(users.filter(u => u.role === 'supervisor' || u.role === 'admin'));
-    const reviewee = randomElement(users.filter(u => u.id !== reviewer.id));
-    const reviewDate = formatDate(subDays(new Date(), randomInt(1, 90)));
-    
-    const getRandomScore = (): 1 | 2 | 3 | 4 | 5 => {
-      return randomInt(1, 5) as 1 | 2 | 3 | 4 | 5;
-    };
-    
-    const review: OutsourceReview = {
-      id: `review-${i + 1}`,
-      revieweeId: reviewee.id,
-      revieweeName: reviewee.name,
-      reviewerId: reviewer.id,
-      reviewerName: reviewer.name,
-      projectId: `project-${randomInt(1, 10)}`,
-      projectName: `Project ${randomInt(1, 10)}`,
-      reviewDate,
-      criteria: {
-        technicalQuality: getRandomScore(),
-        professionalAttitude: getRandomScore(),
-        communication: getRandomScore(),
-        ruleCompliance: getRandomScore(),
-        initiative: getRandomScore(),
-      },
-      strengths: 'Điểm mạnh: Kỹ năng kỹ thuật tốt, giải quyết vấn đề hiệu quả, làm việc nhóm tốt.',
-      areasToImprove: 'Cần cải thiện: Kỹ năng giao tiếp, tuân thủ deadline chặt chẽ hơn.',
-      createdAt: reviewDate,
-      updatedAt: reviewDate,
-    };
-    
-    reviews.push(review);
-  }
+  // Get supervisors and admin users
+  const reviewers = users.filter(user => user.role === 'supervisor' || user.role === 'admin');
+  
+  // Get employees to review
+  const employees = users.filter(user => user.role === 'employee');
+  
+  employees.forEach(employee => {
+    // 80% chance to have a review
+    if (faker.datatype.boolean(0.8)) {
+      const reviewer = getRandomItem(reviewers);
+      
+      const review: OutsourceReview = {
+        id: faker.string.uuid(),
+        reviewerId: reviewer.id,
+        reviewerName: reviewer.name,
+        revieweeId: employee.id,
+        revieweeName: employee.name,
+        reviewDate: formatDate(faker.date.recent()),
+        period: `${faker.date.month()} - ${faker.date.month()}`,
+        projectId: faker.string.uuid(),
+        projectName: faker.company.buzzPhrase(),
+        scores: {
+          technical: faker.number.int({ min: 1, max: 5 }),
+          communication: faker.number.int({ min: 1, max: 5 }),
+          teamwork: faker.number.int({ min: 1, max: 5 }),
+          leadership: faker.number.int({ min: 1, max: 5 }),
+          overall: faker.number.int({ min: 1, max: 5 }),
+        },
+        strengths: Array(faker.number.int({ min: 1, max: 4 }))
+          .fill('')
+          .map(() => faker.lorem.sentence()),
+        weaknesses: Array(faker.number.int({ min: 0, max: 3 }))
+          .fill('')
+          .map(() => faker.lorem.sentence()),
+        comments: faker.lorem.paragraph(),
+        createdAt: faker.date.past().toISOString(),
+        updatedAt: faker.date.recent().toISOString(),
+      };
+      
+      reviews.push(review);
+    }
+  });
   
   return reviews;
 };
 
 // Generate environment setups
-const generateEnvironmentSetups = (users: User[], count: number): EnvironmentSetup[] => {
+export const generateEnvironmentSetups = (users: User[]) => {
   const environmentSetups: EnvironmentSetup[] = [];
   
-  for (let i = 0; i < count; i++) {
-    const employee = randomElement(users);
-    const responsible = randomElement(users.filter(u => u.role === 'agent' || u.role === 'admin'));
-    const requestDate = formatDate(subDays(new Date(), randomInt(1, 90)));
-    
-    const setup: EnvironmentSetup = {
-      id: `setup-${i + 1}`,
-      employeeId: employee.id,
-      employeeName: employee.name,
-      deviceType: randomElement(['laptop', 'pc', 'vm', 'byod']),
-      setupLocation: randomElement(['onsite', 'remote']),
-      requestDate,
-      responsibleId: responsible.id,
-      responsibleName: responsible.name,
-      status: randomElement(['open', 'in progress', 'resolved', 'closed']),
-      notes: 'Ghi chú về thiết lập môi trường làm việc cho nhân viên.',
-      items: [],
-      completionDate: Math.random() > 0.5 ? formatDate(addDays(new Date(requestDate), randomInt(1, 10))) : undefined,
-      createdAt: requestDate,
-      updatedAt: formatDate(subDays(new Date(), randomInt(0, 30))),
-    };
-    
-    // Generate setup items
-    const itemCount = randomInt(3, 8);
-    for (let j = 0; j < itemCount; j++) {
-      setup.items.push({
-        id: `item-${i}-${j}`,
-        title: randomElement([
-          'Cấp laptop', 'Cài đặt VPN', 'Thiết lập email', 'Cài đặt IDE',
-          'Cấu hình Git', 'Cấp SSH key', 'Cài đặt Docker', 'Thiết lập môi trường dev',
-          'Cài đặt Antivirus', 'Thiết lập tài khoản NDO'
-        ]),
-        category: randomElement(['device', 'mdm', 'os', 'software', 'account']),
-        status: randomElement(['pending', 'in_progress', 'done', 'blocked']),
-        createdAt: requestDate,
-        updatedAt: formatDate(subDays(new Date(), randomInt(0, 30))),
-      });
+  // Get IT support and admin users
+  const requesters = users.filter(user => user.role === 'it_support' || user.role === 'admin');
+  
+  // Get employees for setups
+  const employees = users.filter(user => user.role === 'employee');
+  
+  employees.forEach(employee => {
+    // 60% chance to have an environment setup
+    if (faker.datatype.boolean(0.6)) {
+      const requester = getRandomItem(requesters);
+      
+      const items: SetupItem[] = [];
+      const itemCount = faker.number.int({ min: 3, max: 10 });
+      const categories = ['hardware', 'software', 'access', 'other'];
+      const statuses = ['pending', 'in_progress', 'completed', 'blocked'];
+      
+      for (let i = 0; i < itemCount; i++) {
+        const item: SetupItem = {
+          id: faker.string.uuid(),
+          setupId: '', // Will be filled after setup is created
+          name: faker.lorem.words(3),
+          description: faker.lorem.sentence(),
+          category: getRandomItem(categories) as any,
+          status: getRandomItem(statuses) as any,
+          assigneeId: faker.datatype.boolean(0.7) ? getRandomItem(requesters).id : undefined,
+          assigneeName: faker.datatype.boolean(0.7) ? getRandomItem(requesters).name : undefined,
+          dueDate: faker.datatype.boolean(0.6) ? formatDate(faker.date.soon()) : undefined,
+          notes: faker.datatype.boolean(0.5) ? faker.lorem.sentence() : undefined,
+          createdAt: faker.date.past().toISOString(),
+          updatedAt: faker.date.recent().toISOString(),
+        };
+        
+        items.push(item);
+      }
+      
+      const completedCount = items.filter(item => item.status === 'completed').length;
+      
+      const setup: EnvironmentSetup = {
+        id: faker.string.uuid(),
+        requesterId: requester.id,
+        requesterName: requester.name,
+        staffId: employee.id,
+        staffName: employee.name,
+        startDate: formatDate(faker.date.recent()),
+        projectId: faker.string.uuid(),
+        projectName: faker.company.buzzPhrase(),
+        status: completedCount === items.length ? 'completed' : completedCount > 0 ? 'in_progress' : 'pending',
+        items,
+        completedCount,
+        totalCount: items.length,
+        createdAt: faker.date.past().toISOString(),
+        updatedAt: faker.date.recent().toISOString(),
+      };
+      
+      // Set setupId for each item
+      setup.items = items.map(item => ({
+        ...item,
+        setupId: setup.id,
+      }));
+      
+      environmentSetups.push(setup);
     }
-    
-    environmentSetups.push(setup);
-  }
+  });
   
   return environmentSetups;
 };
 
-// Main generator function
-export const generateMockData = () => {
-  // Generate users (20+)
-  const users = generateUsers(25);
+// Generate all mock data
+export const generateAllMockData = () => {
+  // Generate 30 users (including at least one of each role)
+  const users = generateUsers(30);
   
-  // Generate tickets (random per user)
-  const tickets = generateTickets(users, 50);
+  // Generate 8 squads
+  const squads = generateSquads(8);
   
-  // Generate contracts (5 per person)
-  const contracts = generateContracts(users, users.length * 5);
+  // Generate 12 projects
+  const projects = generateProjects(12);
   
-  // Generate squads and projects
-  const squads = generateSquads(10);
-  const projects = generateProjects(10);
+  // Generate contracts (up to 5 per user)
+  const contracts = generateContracts(users, 5);
   
   // Generate assignments
-  const assignments = generateAssignments(users, squads, projects, users.length * 2);
+  const assignments = generateAssignments(users, squads, projects);
   
-  // Generate overtime requests
-  const overtimeRequests = generateOvertimeRequests(users, 30);
+  // Generate 50 tickets
+  const tickets = generateTickets(users, 50);
+  
+  // Generate overtime requests (last 30 days)
+  const overtimeRequests = generateOvertimeRequests(users);
   
   // Generate leave requests
-  const leaveRequests = generateLeaveRequests(users, 30);
+  const leaveRequests = generateLeaveRequests(users);
   
   // Generate reviews
-  const reviews = generateReviews(users, 40);
+  const reviews = generateReviews(users);
   
   // Generate environment setups
-  const environmentSetups = generateEnvironmentSetups(users, 15);
+  const environmentSetups = generateEnvironmentSetups(users);
   
   return {
     users,
-    tickets,
-    contracts,
     squads,
     projects,
+    contracts,
     assignments,
+    tickets,
     overtimeRequests,
     leaveRequests,
     reviews,
-    environmentSetups
+    environmentSetups,
   };
 };
 
-// Generate and export mock data for testing 
-export const mockData = generateMockData();
+// Function to initialize mock data in an API
+export const initializeMockData = async () => {
+  console.log('Generating mock data...');
+  const mockData = generateAllMockData();
+  console.log('Mock data generated:', {
+    users: mockData.users.length,
+    squads: mockData.squads.length,
+    projects: mockData.projects.length,
+    contracts: mockData.contracts.length,
+    assignments: mockData.assignments.length,
+    tickets: mockData.tickets.length,
+    overtimeRequests: mockData.overtimeRequests.length,
+    leaveRequests: mockData.leaveRequests.length,
+    reviews: mockData.reviews.length,
+    environmentSetups: mockData.environmentSetups.length,
+  });
+  
+  return mockData;
+};

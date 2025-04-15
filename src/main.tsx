@@ -1,11 +1,10 @@
 
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App.tsx';
+import App from './App';
 import './index.css';
 import { setupMockApi } from './api/mockApiService';
 
-// Set up mock API for development
 if (import.meta.env.DEV) {
   setupMockApi();
   console.log("sss");
