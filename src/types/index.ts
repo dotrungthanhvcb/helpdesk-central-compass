@@ -1,5 +1,12 @@
-
 // Re-export contract types
+export type { Contract } from './contracts';
+export type { EnvironmentSetup } from './contracts';
+export type { Assignment } from './contracts';
+export type { Document } from './contracts';
+export type { Squad } from './contracts';
+export type { Project } from './contracts';
+
+// Existing exports
 export * from './contracts';
 export * from './timesheet';
 

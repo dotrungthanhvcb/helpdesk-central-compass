@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { User, Ticket, NotificationMessage, OvertimeRequest, OutsourceReview, EnvironmentSetup, WorkLogEntry, LeaveRequest, TimesheetSummary } from "@/types";
 import { Contract, Document, Squad, Project, Assignment } from "@/types/contracts";
@@ -155,7 +154,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     
     toast({
       title: "Ticket đã được tạo",
-      description: `Ticket ${newTicket.title} đã được tạo thành công`,
+      description: `Ticket ${newTicket.title} đã đ��ợc tạo thành công`,
     });
   };
 
